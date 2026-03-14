@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AssetGuard AI - Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .bg-gjp { background-color: #0b948f; }
+        .text-gjp { color: #0b948f; }
+        .border-gjp { border-color: #0b948f; }
+        .hover-bg-gjp:hover { background-color: #097a76; }
+        /* 修复Bug：加上 !important 强制隐藏，防止被 flex 覆盖 */
+        .hidden-page { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen">
+
+    <nav id="navbar" class="bg-white shadow-sm hidden-page">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-gjp rounded-full flex items-center justify-center text-white font-bold text-sm mr-2">GJP</div>
+                    <span class="font-bold text-xl text-gray-800">AssetGuard AI</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="user-role-label" class="text-sm text-gray-600 font-medium">Role: Contractor</span>
+                    <button onclick="navigateTo('login-page')" class="text-sm text-red-600 hover:text-red-800 font-medium">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="login-page" class="min-h-screen flex items-center justify-center">
+        <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gjp rounded-full flex items-center justify-center text-white font-bold text-3xl mx-auto mb-4">GJP</div>
+                <h2 class="text-2xl font-bold text-gray-800">Welcome to AssetGuard AI</h2>
+                <p class="text-gray-500 text-sm mt-2">Sign in to your account</p>
+            </div>
+            <form class="space-y-6" onsubmit="event.preventDefault();">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                    <input type="email" value="contractor@example.com" class="mt-1 w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0b948f] outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" value="password123" class="mt-1 w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0b948f] outline-none">
+                </div>
+                <div class="flex space-x-3 pt-4">
+                    <button onclick="loginAs('contractor')" class="w-1/2 bg-gjp hover-bg-gjp text-white font-bold py-3 rounded-lg shadow-md transition-all">
+                        Login (User)
+                    </button>
+                    <button onclick="loginAs('admin')" class="w-1/2 bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 rounded-lg shadow-md transition-all">
+                        Login (Admin)
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="user-dashboard" class="hidden-page max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Asset Dashboard</h1>
+        
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 class="text-lg font-semibold text-gray-800 border-b pb-3 mb-4">Select Asset for Load Request</h2>
+            <div class="flex mb-4">
+                <input type="text" placeholder="Search asset by name or ID..." class="w-full border border-gray-300 rounded-l-lg p-3 outline-none focus:border-gjp">
+                <button class="bg-gray-100 border border-gray-300 border-l-0 rounded-r-lg px-6 font-medium text-gray-600 hover:bg-gray-200">Search</button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-600 text-sm border-b">
+                            <th class="p-3 font-medium">Asset ID</th>
+                            <th class="p-3 font-medium">Asset Name</th>
+                            <th class="p-3 font-medium">Location</th>
+                            <th class="p-3 font-medium">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm text-gray-700">
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="p-3">AST-092</td>
+                            <td class="p-3 font-medium">UWA Library Bridge</td>
+                            <td class="p-3">UWA Crawley Campus</td>
+                            <td class="p-3">
+                                <button onclick="navigateTo('load-entry')" class="text-sm bg-gjp text-white px-4 py-2 rounded shadow hover-bg-gjp">Select & Request</button>
+                            </td>
+                        </tr>
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="p-3">AST-105</td>
+                            <td class="p-3 font-medium">Fremantle Port Pier B</td>
+                            <td class="p-3">Fremantle</td>
+                            <td class="p-3">
+                                <button onclick="navigateTo('load-entry')" class="text-sm bg-gjp text-white px-4 py-2 rounded shadow hover-bg-gjp">Select & Request</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-800 border-b pb-3 mb-4">Your Recent Assessments</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-600 text-sm border-b">
+                            <th class="p-3 font-medium">Date</th>
+                            <th class="p-3 font-medium">Asset</th>
+                            <th class="p-3 font-medium">Equipment</th>
+                            <th class="p-3 font-medium">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm text-gray-700">
+                        <tr class="border-b">
+                            <td class="p-3">2026-03-12</td>
+                            <td class="p-3">UWA Library Bridge</td>
+                            <td class="p-3">Excavator (8000kg)</td>
+                            <td class="p-3"><span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">FAILED</span></td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="p-3">2026-03-10</td>
+                            <td class="p-3">Fremantle Port Pier B</td>
+                            <td class="p-3">Scissor Lift (2500kg)</td>
+                            <td class="p-3"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">PASSED</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="load-entry" class="hidden-page max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <button onclick="navigateTo('user-dashboard')" class="text-gray-500 hover:text-gray-800 mb-6 flex items-center text-sm font-medium">
+            ← Back to Dashboard
+        </button>
+
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Load Request Entry</h2>
+            <p class="text-gray-500 mb-8 pb-4 border-b">Target Asset: <span class="font-bold text-gjp">UWA Library Bridge (AST-092)</span></p>
+
+            <form class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Equipment Type</label>
+                        <select class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0b948f] outline-none">
+                            <option>Scissor Lift</option>
+                            <option>Excavator</option>
+                            <option>Crane</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Intended Work Date</label>
+                        <input type="date" value="2026-03-20" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0b948f] outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Total Weight (kg)</label>
+                        <input type="number" value="2500" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0b948f] outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Contact Area (sqm)</label>
+                        <input type="number" value="4.5" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0b948f] outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
+                    <textarea rows="3" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0b948f] outline-none" placeholder="Enter any specific details about the operation..."></textarea>
+                </div>
+
+                <button type="button" onclick="showResultModal()" class="w-full bg-gjp hover-bg-gjp text-white font-bold text-lg py-4 rounded-lg shadow-md transition-all mt-6">
+                    Run Compliance Check
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="admin-dashboard" class="hidden-page max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Admin Portal - Data Ingestion</h1>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">1. Upload Engineering Drawings</h2>
+            <div class="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:bg-gray-50 transition-colors cursor-pointer">
+                <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                <p class="text-gray-600 font-medium">Drag & Drop PDF/JPG files here</p>
+                <p class="text-sm text-gray-400 mt-1">or click to browse local files</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">2. AI Extraction Engine</h2>
+            <div class="flex items-end gap-4 mb-8">
+                <div class="flex-grow">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Model</label>
+                    <select class="w-full border border-gray-300 rounded-lg p-3 outline-none">
+                        <option>Google Gemini Pro Vision</option>
+                        <option>OpenAI GPT-4o</option>
+                    </select>
+                </div>
+                <button class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-lg shadow transition-all">
+                    Extract Design Limits
+                </button>
+            </div>
+
+            <h3 class="text-md font-semibold text-gray-700 border-b pb-2 mb-4">Extraction Results (Pending Database Sync)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-600 text-sm border-b">
+                            <th class="p-3 font-medium">Asset Name</th>
+                            <th class="p-3 font-medium">Max Load (kg)</th>
+                            <th class="p-3 font-medium">Material</th>
+                            <th class="p-3 font-medium">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm text-gray-700">
+                        <tr class="border-b">
+                            <td class="p-3 font-medium">UWA Library Bridge</td>
+                            <td class="p-3">2000</td>
+                            <td class="p-3">Reinforced Concrete</td>
+                            <td class="p-3">
+                                <button class="text-sm bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded shadow">Save to Supabase</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden-page flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 relative border-t-8 border-red-500">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                    <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900">FAILED</h3>
+                <p class="text-sm text-gray-500 font-medium mt-1">Exceeds Structural Limits</p>
+                
+                <div class="bg-gray-50 rounded p-4 mt-6 text-left text-sm space-y-2 border border-gray-100">
+                    <p class="flex justify-between"><span class="text-gray-500">Requested:</span> <span class="font-bold text-red-600">2,500 kg</span></p>
+                    <p class="flex justify-between"><span class="text-gray-500">Max Allowable:</span> <span class="font-bold text-green-600">2,000 kg</span></p>
+                </div>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 mt-4 text-left">
+                    <p class="text-xs text-yellow-800 font-medium">
+                        Notice: An automated email alert has been dispatched to Asset Manager (Glen Pikor) for review.
+                    </p>
+                </div>
+            </div>
+            <div class="mt-8">
+                <button onclick="closeModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 rounded-lg transition-colors">
+                    Close & Return
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pages = ['login-page', 'user-dashboard', 'load-entry', 'admin-dashboard'];
+
+        function navigateTo(pageId) {
+            // Hide all pages
+            pages.forEach(p => document.getElementById(p).classList.add('hidden-page'));
+            // Show target page
+            document.getElementById(pageId).classList.remove('hidden-page');
+            
+            // Toggle navbar visibility
+            if(pageId === 'login-page') {
+                document.getElementById('navbar').classList.add('hidden-page');
+            } else {
+                document.getElementById('navbar').classList.remove('hidden-page');
+            }
+        }
+
+        function loginAs(role) {
+            if(role === 'admin') {
+                document.getElementById('user-role-label').innerText = 'Role: Admin / Asset Manager';
+                navigateTo('admin-dashboard');
+            } else {
+                document.getElementById('user-role-label').innerText = 'Role: Contractor';
+                navigateTo('user-dashboard');
+            }
+        }
+
+        function showResultModal() {
+            document.getElementById('result-modal').classList.remove('hidden-page');
+        }
+
+        function closeModal() {
+            document.getElementById('result-modal').classList.add('hidden-page');
+            navigateTo('user-dashboard');
+        }
+    </script>
+</body>
+</html>
