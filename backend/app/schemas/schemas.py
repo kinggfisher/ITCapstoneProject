@@ -2,6 +2,12 @@ from pydantic import BaseModel
 from datetime import datetime
 from uuid import UUID
 
+class AssessmentCreate(BaseModel):
+    asset_id: UUID
+    load_kg: float
+    equipment_type: str
+    notes: str | None
+    
 class AssetResponse(BaseModel):
     id: UUID
     name: str
@@ -13,3 +19,5 @@ class AssetResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+        
