@@ -7,7 +7,7 @@ class AssessmentCreate(BaseModel):
     load_kg: float
     equipment_type: str
     notes: str | None
-    
+
 class AssetResponse(BaseModel):
     id: UUID
     name: str
