@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Environment variables
+.env
+.env.*
+
+# Django
+*.log
+db.sqlite3
+staticfiles/
+media/
+
+# Migrations (optional — many teams commit these)
+# */migrations/*.py
+# !*/migrations/__init__.py
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# PyCharm / JetBrains
+.idea/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
