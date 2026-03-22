@@ -91,6 +91,15 @@ DATABASES = {
     }
 }
 
+# Optional SQLite fallback for fast local development. Set USE_SQLITE=True in
+# your `backend/.env` (or export the env var) to enable this. When enabled the
+# default database will be a local file `db.sqlite3` in the project BASE_DIR.
+if os.getenv('USE_SQLITE', 'False').lower() in ('1', 'true', 'yes'):
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
