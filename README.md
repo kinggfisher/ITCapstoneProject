@@ -18,3 +18,11 @@ Engineers, contractors, and asset managers can log in, select an asset, enter a 
 
 ---
 ## Team
+| Name (Surname, First Name) | Student ID |
+| :--- | :--- |
+| **Gowda**, Dhanush | 24245807 |
+| **Han**, Fei | 24495786 |
+| **Luo**, Jingwei | 23875736 |
+| **Sun**, Yuxin | 21900579 |
+| **Wang**, Xingyue | 24090791 |
+| **Yang**, Kuan | 22595879 |
