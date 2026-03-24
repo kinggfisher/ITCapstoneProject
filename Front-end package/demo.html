@@ -4,18 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AssetGuard AI - Prototype</title>
+    <!-- Tailwind CSS CDN for rapid styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .bg-gjp { background-color: #0b948f; }
         .text-gjp { color: #0b948f; }
         .border-gjp { border-color: #0b948f; }
         .hover-bg-gjp:hover { background-color: #097a76; }
-        /* 修复Bug：加上 !important 强制隐藏，防止被 flex 覆盖 */
+        /* Bug fix: Added !important to force hiding, preventing it from being covered by flex. */
         .hidden-page { display: none !important; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen">
-
+<!-- Navbar on top, hidden before logging, including logo, app name, user label and exit button -->
     <nav id="navbar" class="bg-white shadow-sm hidden-page">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
@@ -30,7 +31,7 @@
             </div>
         </div>
     </nav>
-
+<!-- Login Page -->
     <div id="login-page" class="min-h-screen flex items-center justify-center">
         <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
             <div class="text-center mb-8">
@@ -58,17 +59,18 @@
             </form>
         </div>
     </div>
-
+<!-- User Dashboard with asset selection and recent assessments, leading to load request entry form. Admin Dashboard for data ingestion and AI extraction results. Modal for compliance check results. -->
     <div id="user-dashboard" class="hidden-page max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 class="text-2xl font-bold text-gray-800 mb-6">Asset Dashboard</h1>
-        
+        <!-- Module 1: Asset selection area (used to initiate load requests) -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
             <h2 class="text-lg font-semibold text-gray-800 border-b pb-3 mb-4">Select Asset for Load Request</h2>
+            <!-- Search bar: Search by asset name or ID -->
             <div class="flex mb-4">
                 <input type="text" placeholder="Search asset by name or ID..." class="w-full border border-gray-300 rounded-l-lg p-3 outline-none focus:border-gjp">
                 <button class="bg-gray-100 border border-gray-300 border-l-0 rounded-r-lg px-6 font-medium text-gray-600 hover:bg-gray-200">Search</button>
             </div>
-            
+            <!-- Asset List Table -->
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -100,7 +102,7 @@
                 </table>
             </div>
         </div>
-
+        <!-- Module 2: Recent Evaluation Records -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 class="text-lg font-semibold text-gray-800 border-b pb-3 mb-4">Your Recent Assessments</h2>
             <div class="overflow-x-auto">
@@ -131,7 +133,7 @@
             </div>
         </div>
     </div>
-
+<!-- Load Request Entry -->
     <div id="load-entry" class="hidden-page max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <button onclick="navigateTo('user-dashboard')" class="text-gray-500 hover:text-gray-800 mb-6 flex items-center text-sm font-medium">
             ← Back to Dashboard
@@ -179,10 +181,10 @@
             </form>
         </div>
     </div>
-
+<!-- Admin Dashboard for data ingestion and AI extraction results -->
     <div id="admin-dashboard" class="hidden-page max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 class="text-2xl font-bold text-gray-800 mb-6">Admin Portal - Data Ingestion</h1>
-
+        <!-- Module 1: Upload Engineering Drawings (Drag and drop the upload area) -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
             <h2 class="text-lg font-semibold text-gray-800 mb-4">1. Upload Engineering Drawings</h2>
             <div class="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:bg-gray-50 transition-colors cursor-pointer">
@@ -191,7 +193,7 @@
                 <p class="text-sm text-gray-400 mt-1">or click to browse local files</p>
             </div>
         </div>
-
+        <!-- Module 2: AI Extraction Engine -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
             <h2 class="text-lg font-semibold text-gray-800 mb-4">2. AI Extraction Engine</h2>
             <div class="flex items-end gap-4 mb-8">
@@ -232,7 +234,7 @@
             </div>
         </div>
     </div>
-
+<!-- Modal for compliance check results -->
     <div id="result-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden-page flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 relative border-t-8 border-red-500">
             <div class="text-center">
@@ -260,10 +262,10 @@
             </div>
         </div>
     </div>
-
+<!-- JavaScript for page navigation and modal handling -->
     <script>
         const pages = ['login-page', 'user-dashboard', 'load-entry', 'admin-dashboard'];
-
+        // Page navigation function: First hide all pages, then show the target page.
         function navigateTo(pageId) {
             // Hide all pages
             pages.forEach(p => document.getElementById(p).classList.add('hidden-page'));
@@ -277,7 +279,7 @@
                 document.getElementById('navbar').classList.remove('hidden-page');
             }
         }
-
+        // Login function: redirects to different dashboards based on the user's role.
         function loginAs(role) {
             if(role === 'admin') {
                 document.getElementById('user-role-label').innerText = 'Role: Admin / Asset Manager';
@@ -288,10 +290,14 @@
             }
         }
 
+        // Display a pop-up window showing compliance check results
+        // Remove the hidden-page class to make the pop-up window visible
         function showResultModal() {
             document.getElementById('result-modal').classList.remove('hidden-page');
         }
 
+        // Close the pop-up and return to the user dashboard.
+        // Hide the pop-up first, then navigate back to the dashboard page.
         function closeModal() {
             document.getElementById('result-modal').classList.add('hidden-page');
             navigateTo('user-dashboard');
