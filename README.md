@@ -26,3 +26,39 @@ Engineers, contractors, and asset managers can log in, select an asset, enter a 
 | **Sun**, Yuxin | 21900579 |
 | **Wang**, Xingyue | 24090791 |
 | **Yang**, Kuan | 22595879 |
+
+---
+
+## Architecture Overview
+
+- **Frontend (React):** user login, asset selection, load input, results, history
+- **Backend (Django + DRF):** REST API + compliance logic + validation + auth
+- **Database (PostgreSQL / Supabase):** assets, limits, users, assessments/history
+- **Admin (Django Admin):** internal data management interface
+
+## Tech Stack
+
+| Component | Technology |
+|---|---|
+| Frontend | React |
+| Backend | Django 4.x + Django REST Framework |
+| Database | PostgreSQL (Supabase) |
+| Local Dev DB (optional) | SQLite |
+| Project tracking | GitHub Issues + GitHub Projects |
+| Collaboration | Microsoft Teams + OneDrive |
+
+---
+
+
+## Getting Started (Backend)
+
+### Prerequisites
+- Python 3.10+ recommended
+- pip / venv
+
+### Setup
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
