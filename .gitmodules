@@ -1,0 +1,3 @@
+[submodule "client-repo"]
+	path = client-repo
+	url = https://github.com/ryanmorrisondesign/gjp-assetguard-extraction-tool.git
