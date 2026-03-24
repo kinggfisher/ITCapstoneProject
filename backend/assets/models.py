@@ -1,12 +1,49 @@
+
 from django.db import models
 
-class Asset(models.Model):
-    name = models.CharField(max_length=255)
-    location = models.CharField(max_length=255, blank=True, null=True)
-    max_load_kg = models.FloatField()
-    material_grade = models.CharField(max_length=100, blank=True, null=True)
-    notes = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+
+class Location(models.Model):
+    name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
         return self.name
+
+
+class Asset(models.Model):
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name="assets")
+    name = models.CharField(max_length=255)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["location", "name"], name="unique_asset_per_location")
+        ]
+
+    def __str__(self):
+        return f"{self.location.name} - {self.name}"
+
+
+class LoadCapacity(models.Model):
+    class CapacityName(models.TextChoices):
+        MAX_POINT_LOAD = "max_point_load", "Max Point Load"
+        MAX_AXLE_LOAD = "max_axle_load", "Max Axle Load"
+        MAX_UNIFORM_DISTRIBUTED_LOAD = "max_uniform_distributed_load", "Max Uniform Distributed Load"
+        MAX_DISPLACEMENT_SIZE = "max_displacement_size", "Max Displacement Size"
+
+    class Metric(models.TextChoices):
+        KN = "kN", "kilonewtons (kN)"
+        T = "t", "tonnes (t)"
+        KPA = "kPa", "kilopascal (kPa)"
+
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="load_capacities")
+    name = models.CharField(max_length=64, choices=CapacityName.choices)
+    metric = models.CharField(max_length=16, choices=Metric.choices)
+    max_load = models.FloatField()
+    details = models.TextField(blank=True, null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["asset", "name"], name="unique_capacity_name_per_asset")
+        ]
+
+    def __str__(self):
+        return f"{self.asset} - {self.get_name_display()}: {self.max_load} {self.metric}"
