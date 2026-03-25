@@ -56,9 +56,30 @@ Engineers, contractors, and asset managers can log in, select an asset, enter a 
 - Python 3.10+ recommended
 - pip / venv
 
+### Environment Variables
+
+Create a file named `.env` in the root of your project directory (`ITCapstoneProject/.env`). You will need the secret keys (shared internally by the team) to fill in the missing values:
+
+```env
+# Database Configuration (Supabase / PostgreSQL)
+DB_HOST=<ask-for-db-host>
+DB_PASSWORD=<ask-for-password>
+DB_NAME=postgres
+DB_USER=<ask-for-db-user>
+
+
+# Django Configuration
+SECRET_KEY=<ask-for-secret-key>
+
+# Local Development Fallback
+# Set to 'true' to use SQLite instead of connecting to the remote Postgres DB
+USE_SQLITE=true
+```
+
 ### Setup
 ```bash
 cd backend
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+```
