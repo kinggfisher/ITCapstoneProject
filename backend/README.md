@@ -6,14 +6,23 @@ python -m venv .venv
 # enter venv
 source .venv/bin/activate
 pip install -r requirements.txt
-# Update the .env file based on your local setup.
-cp .env.example .env 
 
-# Open .env if setup superbase, if keep local development， go to migrate& run backend
+## Environment Setup
 
-# To use PostgreSQL (e.g. Supabase):
+# Copy the environment file:
+
+cp .env.example .env
+
+## Edit the `.env` file based on your setup.
+
+## Database Configuration
+
+# By default, the project uses SQLite for local development. To use PostgreSQL (e.g. Supabase), set:
+
 USE_SQLITE=False
+
 # Then configure:
+
 DB_NAME=
 DB_USER=
 DB_PASSWORD=
