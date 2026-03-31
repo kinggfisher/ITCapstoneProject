@@ -7,7 +7,7 @@ class LocationViewSet(viewsets.ModelViewSet):
     serializer_class = LocationSerializer
 
 class AssetViewSet(viewsets.ModelViewSet):
-    queryset = Asset.objects.all()
+    queryset = Asset.objects.select_related('location').prefetch_related('load_capacities').all()
     serializer_class = AssetSerializer
 
     def get_queryset(self):
