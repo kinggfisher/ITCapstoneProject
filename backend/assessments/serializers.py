@@ -23,21 +23,23 @@ class AssessmentSerializer(serializers.ModelSerializer):
         equipment_type = data.get('equipment_type')
         load_value = data.get('load_value')
 
-        # check asset-location consistency
+        # Validate asset belongs to selected location
         if asset.location != location:
             raise serializers.ValidationError({
                 "asset": f"Asset '{asset.name}' does not belong to location '{location.name}'."
             })
 
-        # check equipment type mapping
+        # Look up capacity mapping
         mapping = EQUIPMENT_CAPACITY_MAP.get(equipment_type)
         if not mapping:
             raise serializers.ValidationError({
                 "equipment_type": f"No mapping found for '{equipment_type}'."
             })
-        capacity_name, expected_metric, _ = mapping
 
-        # check if asset has the required capacity defined
+        # unpack only two values — metric removed from mapping
+        capacity_name, load_label = mapping
+
+        # Query matching LoadCapacity from database
         try:
             load_capacity = LoadCapacity.objects.get(asset=asset, name=capacity_name)
         except LoadCapacity.DoesNotExist:
@@ -45,9 +47,11 @@ class AssessmentSerializer(serializers.ModelSerializer):
                 "asset": f"Asset '{asset.name}' has no '{capacity_name}' capacity defined."
             })
 
-        # automatically fill in capacity details and compliance result
+        # Auto-populate system fields
         data['capacity_name'] = capacity_name
+        # This ensures metric is always consistent with what's stored in LoadCapacity
         data['capacity_metric'] = load_capacity.metric
         data['capacity_limit'] = load_capacity.max_load
         data['is_compliant'] = load_value <= load_capacity.max_load
+
         return data

@@ -31,12 +31,13 @@ class AssessmentViewSet(viewsets.ModelViewSet):
 class EquipmentOptionsViewSet(viewsets.ViewSet):
     def list(self, request):
         options = []
-        for value, (capacity_name, metric, load_label) in EQUIPMENT_CAPACITY_MAP.items():
+        for value, (capacity_name, load_label) in EQUIPMENT_CAPACITY_MAP.items():
             display = dict(Assessment.EquipmentType.choices).get(value, value)
             options.append({
                 "value": value,
                 "label": display,
                 "load_label": load_label,
-                "metric": metric,
+                # from load_capacities in GET /api/assets/:id/ using capacity_name to match
+                "capacity_name": capacity_name,
             })
         return Response(options)
