@@ -13,7 +13,8 @@ class LoadCapacitySerializer(serializers.ModelSerializer):
 
 class AssetSerializer(serializers.ModelSerializer):
     load_capacities = LoadCapacitySerializer(many=True, read_only=True)
+    location_name = serializers.CharField(source='location.name', read_only=True)
 
     class Meta:
         model = Asset
-        fields = '__all__'
+        fields = ['id', 'name', 'location', 'location_name', 'load_capacities']

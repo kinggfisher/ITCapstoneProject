@@ -26,7 +26,8 @@ class LoadCapacity(models.Model):
     class CapacityName(models.TextChoices):
         MAX_POINT_LOAD = "max_point_load", "Max Point Load"
         MAX_AXLE_LOAD = "max_axle_load", "Max Axle Load"
-        MAX_UNIFORM_DISTRIBUTED_LOAD = "max_uniform_distributed_load", "Max Uniform Distributed Load"
+        # fixed typo in "distributor" and added "uniform" to match the original name
+        MAX_UNIFORM_DISTRIBUTOR_LOAD = "max_uniform_distributor_load", "Max Uniform Distributor Load"   
         MAX_DISPLACEMENT_SIZE = "max_displacement_size", "Max Displacement Size"
 
     class Metric(models.TextChoices):
