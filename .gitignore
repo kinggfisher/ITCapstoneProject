@@ -38,3 +38,8 @@ media/
 dist/
 build/
 *.egg-info/
+
+# Frontend (Node/Vite)
+node_modules/
+.vite/
+.vite/deps/
