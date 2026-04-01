@@ -3,6 +3,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from assets.views import AssetViewSet, LocationViewSet, LoadCapacityViewSet
 from assessments.views import AssessmentViewSet, EquipmentOptionsViewSet
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from . import views
 
 router = DefaultRouter()
