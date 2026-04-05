@@ -1,5 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from core.permissions import IsAdmin, IsAdminOrReadOnly
 from .models import Assessment
 from .serializers import AssessmentSerializer
 from .mappings import EQUIPMENT_CAPACITY_MAP
@@ -7,28 +9,35 @@ from .mappings import EQUIPMENT_CAPACITY_MAP
 
 class AssessmentViewSet(viewsets.ModelViewSet):
     queryset = Assessment.objects.select_related(
-        'asset', 'asset__location'
+        'asset', 'asset__location', 'created_by'
     ).order_by('-created_at')
     serializer_class = AssessmentSerializer
+    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
+        instance = serializer.save(created_by=request.user)
 
         if instance.is_compliant:
             return Response({
                 "is_compliant": True,
                 "result": "PASS",
+                "assessment_id": instance.id,
+                "created_by": instance.created_by.username,
             }, status=status.HTTP_201_CREATED)
 
         return Response({
             "is_compliant": False,
             "result": "FAIL",
+            "assessment_id": instance.id,
+            "created_by": instance.created_by.username,
         }, status=status.HTTP_201_CREATED)
 
 
 class EquipmentOptionsViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
     def list(self, request):
         options = []
         for value, (capacity_name, load_label) in EQUIPMENT_CAPACITY_MAP.items():

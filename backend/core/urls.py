@@ -18,6 +18,7 @@ urlpatterns = [
     path('demo/', views.demo, name='demo'),
     path('admin/', admin.site.urls),
     path('api/extract/', views.extract_design_criteria, name='extract'),
+    path('api/logout/', views.logout, name='logout'),
     path('api/', include(router.urls)),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
