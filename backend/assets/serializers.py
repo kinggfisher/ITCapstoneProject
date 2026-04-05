@@ -17,4 +17,4 @@ class AssetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Asset
-        fields = ['id', 'name', 'location', 'location_name', 'load_capacities']
+        fields = ['id', 'name', 'location', 'location_name', 'load_capacities', 'drawing_file']

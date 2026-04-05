@@ -7,6 +7,27 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from assets.models import Location, Asset, LoadCapacity
 from assets.extraction import extract_from_text
+import pdfplumber
+from PIL import Image
+import io
+
+
+def extract_text_from_file(file):
+    """
+    Extract text from uploaded file (PDF or image).
+    """
+    if file.name.lower().endswith('.pdf'):
+        with pdfplumber.open(file) as pdf:
+            text = ''
+            for page in pdf.pages:
+                text += page.extract_text() + '\n'
+            return text
+    elif file.name.lower().endswith(('.jpg', '.jpeg', '.png')):
+        # For images, assume text is embedded or use OCR if available
+        # For now, raise error
+        raise ValueError("Image files are not supported yet. Please upload a PDF.")
+    else:
+        raise ValueError("Unsupported file type. Only PDF files are supported.")
 
 
 def home(request):
@@ -21,13 +42,10 @@ def demo(request):
 @permission_classes([AllowAny])
 def extract_design_criteria(request):
     """
-    Extract design criteria from text input.
+    Extract design criteria from uploaded file (PDF or image).
 
-    Request body:
-    {
-        "text": "Project: BuildingA\nDrawing: DA-001\nMax Point Load: 50 kN",
-        "auto_save": false
-    }
+    Request: multipart/form-data with 'file' field
+    Optional: 'auto_save' boolean
 
     Returns:
     {
@@ -39,12 +57,21 @@ def extract_design_criteria(request):
     }
     """
     try:
-        text = request.data.get('text', '')
+        file = request.FILES.get('file')
         auto_save = request.data.get('auto_save', False)
+
+        if not file:
+            return Response(
+                {"error": "File field is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Extract text from file
+        text = extract_text_from_file(file)
 
         if not text or not text.strip():
             return Response(
-                {"error": "Text field is required and cannot be empty"},
+                {"error": "No text could be extracted from the file"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -64,8 +91,12 @@ def extract_design_criteria(request):
             drawing_number = extracted.get('drawing_number') or 'Unknown Drawing'
             asset, _ = Asset.objects.get_or_create(
                 location=location,
-                name=drawing_number
+                name=drawing_number,
+                defaults={'drawing_file': file}
             )
+            if not asset.drawing_file:
+                asset.drawing_file = file
+                asset.save()
             saved_ids['asset_id'] = asset.id
 
             # Create load capacities
