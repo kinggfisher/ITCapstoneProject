@@ -12,6 +12,7 @@ class Location(models.Model):
 class Asset(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name="assets")
     name = models.CharField(max_length=255)
+    drawing_file = models.FileField(upload_to='drawings/', blank=True, null=True)
 
     class Meta:
         constraints = [

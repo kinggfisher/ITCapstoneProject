@@ -5,16 +5,18 @@ from assets.models import LoadCapacity
 
 
 class AssessmentSerializer(serializers.ModelSerializer):
+    created_by_username = serializers.CharField(source='created_by.username', read_only=True)
+
     class Meta:
         model = Assessment
         fields = [
             'id', 'location', 'asset', 'equipment_type', 'equipment_model',
             'load_value', 'capacity_name', 'capacity_metric',
-            'capacity_limit', 'is_compliant', 'notes', 'created_at',
+            'capacity_limit', 'is_compliant', 'notes', 'created_by', 'created_by_username', 'created_at',
         ]
         read_only_fields = [
             'capacity_name', 'capacity_metric',
-            'capacity_limit', 'is_compliant', 'created_at',
+            'capacity_limit', 'is_compliant', 'created_by', 'created_by_username', 'created_at',
         ]
 
     def validate(self, data):
