@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-
-const API = 'http://localhost:8000';
+import { api, tokens, onAuthFailure } from '../api';
 
 export default function LoadEntry() {
-  const { assetId } = useParams();
-  const navigate = useNavigate();
+const { assetId } = useParams();
+const navigate = useNavigate();
 
   const [asset, setAsset] = useState(null);
   const [equipmentOptions, setEquipmentOptions] = useState([]);
@@ -16,35 +15,28 @@ export default function LoadEntry() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [result, setResult] = useState(null); // { passed: bool, details: {} }
+  const [result, setResult] = useState(null);
 
-  const token = localStorage.getItem('access_token');
-
-  // Redirect if not logged in
+  // Redirect if not logged in (or if a refresh fails mid-session)
   useEffect(() => {
-    if (!token) navigate('/');
-  }, [token, navigate]);
+    if (!tokens.getAccess()) { navigate('/'); return; }
+    return onAuthFailure(() => navigate('/'));
+  }, [navigate]);
 
   // Fetch asset info + equipment options in parallel
   useEffect(() => {
-    const headers = { Authorization: `Bearer ${token}` };
-
-    Promise.all([
-      fetch(`${API}/api/assets/${assetId}/`, { headers }).then(r => {
-        if (r.status === 401) { navigate('/'); return null; }
-        if (!r.ok) throw new Error('Asset not found');
-        return r.json();
-      }),
-      fetch(`${API}/api/equipment-options/`, { headers }).then(r => r.json()),
-    ])
+    let cancelled = false;
+    Promise.all([api.getAsset(assetId), api.listEquipmentOptions()])
       .then(([assetData, optionsData]) => {
+        if (cancelled) return;
         setAsset(assetData);
         setEquipmentOptions(optionsData);
         if (optionsData.length > 0) setSelectedEquipment(optionsData[0].value);
       })
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [assetId, token, navigate]);
+      .catch((err) => { if (!cancelled && err.status !== 401) setError(err.message); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [assetId]);
 
   const activeOption = equipmentOptions.find(o => o.value === selectedEquipment);
 
@@ -52,41 +44,20 @@ export default function LoadEntry() {
     e.preventDefault();
     setError('');
     setSubmitting(true);
-
     try {
-      const response = await fetch(`${API}/api/assessments/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          location: asset.location,
-          asset: parseInt(assetId),
-          equipment_type: selectedEquipment,
-          equipment_model: equipmentModel || null,
-          load_value: parseFloat(loadValue),
-          notes: notes || null,
-        }),
-      });
+      const payload = {
+        location: asset.location,
+        asset: parseInt(assetId, 10),
+        equipment_type: selectedEquipment,
+        load_value: parseFloat(loadValue),
+      };
+      if (equipmentModel) payload.equipment_model = equipmentModel;
+      if (notes) payload.notes = notes;
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Surface validation errors from backend
-        const msg = typeof data === 'object'
-          ? Object.values(data).flat().join(' ')
-          : 'Submission failed.';
-        setError(msg);
-        return;
-      }
-
-      setResult({
-        passed: data.is_compliant,
-        assessmentId: data.assessment_id,
-      });
+      const data = await api.createAssessment(payload);
+      setResult({ passed: data.is_compliant, assessmentId: data.assessment_id });
     } catch (err) {
-      setError('Network error. Is the backend running?');
+      setError(err.message || 'Submission failed.');
     } finally {
       setSubmitting(false);
     }
