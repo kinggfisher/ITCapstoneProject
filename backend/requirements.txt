@@ -1,7 +1,8 @@
-asgiref
 Django
 djangorestframework
 psycopg2-binary
 python-dotenv
-sqlparse
+django-cors-headers
+pdfplumber
 djangorestframework-simplejwt
+resend

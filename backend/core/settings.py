@@ -163,6 +163,23 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
 
+# Email alerts — provider toggle
+# Set EMAIL_PROVIDER=gmail or EMAIL_PROVIDER=resend in .env
+EMAIL_ALERTS_ENABLED = os.getenv('EMAIL_ALERTS', 'false').lower() == 'true'
+EMAIL_PROVIDER = os.getenv('EMAIL_PROVIDER', 'gmail')  # 'gmail' or 'resend'
+
+# Gmail SMTP (used when EMAIL_PROVIDER=gmail)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Resend API (used when EMAIL_PROVIDER=resend)
+RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 

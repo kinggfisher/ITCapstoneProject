@@ -32,8 +32,8 @@ export default function Dashboard() {
     <div className="bg-gray-100 min-h-screen">
       <nav className="bg-white shadow-sm p-4 flex justify-between items-center mb-8">
         <div className="flex items-center space-x-2">
-           <div className="w-8 h-8 bg-gjp rounded-full flex items-center justify-center text-white font-bold">GJP</div>
-           <span className="font-bold text-xl">AssetGuard AI</span>
+          <div className="w-8 h-8 bg-gjp rounded-full flex items-center justify-center text-white font-bold">GJP</div>
+          <span className="font-bold text-xl">AssetGuard AI</span>
         </div>
         <button onClick={() => { localStorage.removeItem('access_token'); navigate('/'); }} className="text-red-600 font-bold">Logout</button>
       </nav>
@@ -55,7 +55,7 @@ export default function Dashboard() {
               {assets.map((asset) => (
                 <tr key={asset.id} className="border-b hover:bg-gray-50">
                   <td className="p-3 font-medium">{asset.name}</td>
-                  <td className="p-3">{asset.location}</td>
+                  <td className="p-3">{asset.location_name}</td>
                   <td className="p-3">
                     <button onClick={() => navigate(`/request/${asset.id}`)} className="bg-gjp text-white px-4 py-2 rounded">Select</button>
                   </td>
