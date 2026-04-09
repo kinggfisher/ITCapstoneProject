@@ -54,3 +54,16 @@ class EquipmentOptionsViewSet(viewsets.ViewSet):
                 "capacity_name": capacity_name,
             })
         return Response(options)
+    
+
+class AssessmentHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = AssessmentHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Only return assessments created by the requesting user, ordered by most recent
+        return Assessment.objects.select_related(
+            'asset', 'asset__location'
+        ).filter(
+            user=self.request.user
+        ).order_by('-created_at')

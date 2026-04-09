@@ -57,3 +57,25 @@ class AssessmentSerializer(serializers.ModelSerializer):
         data['is_compliant'] = load_value <= load_capacity.max_load
 
         return data
+
+class AssessmentHistorySerializer(serializers.ModelSerializer):
+    asset_name     = serializers.CharField(source='asset.name', read_only=True)
+    location_name  = serializers.CharField(source='asset.location.name', read_only=True)
+    load_label     = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Assessment
+        fields = [
+            'id',
+            'asset_name',
+            'location_name',
+            'load_label',       # "Max Outrigger Load"
+            'load_value',
+            'capacity_metric',  
+            'is_compliant',
+            'created_at',
+        ]
+
+    def get_load_label(self, obj):
+        mapping = EQUIPMENT_CAPACITY_MAP.get(obj.equipment_type)
+        return mapping[1] if mapping else obj.capacity_name
