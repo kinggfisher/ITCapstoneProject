@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from core.permissions import IsAdmin, IsAdminOrReadOnly
 from core.email_utils import send_compliance_failure_alert
 from .models import Assessment
-from .serializers import AssessmentSerializer
+from .serializers import AssessmentSerializer, AssessmentHistorySerializer
 from .mappings import EQUIPMENT_CAPACITY_MAP
 
 
@@ -65,5 +65,5 @@ class AssessmentHistoryViewSet(viewsets.ReadOnlyModelViewSet):
         return Assessment.objects.select_related(
             'asset', 'asset__location'
         ).filter(
-            user=self.request.user
+            created_by=self.request.user
         ).order_by('-created_at')
