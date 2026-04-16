@@ -1,6 +1,5 @@
 from rest_framework.routers import DefaultRouter
-from .views import AssessmentViewSet, EquipmentOptionsViewSet
-from assessments.views import AssessmentViewSet, EquipmentOptionsViewSet, AssessmentHistoryViewSet
+from .views import AssessmentViewSet, EquipmentOptionsViewSet, AssessmentHistoryViewSet
 
 router = DefaultRouter()
 router.register(r'assessments', AssessmentViewSet)
@@ -8,4 +7,3 @@ router.register(r'equipment-options', EquipmentOptionsViewSet, basename='equipme
 router.register(r'assessment-history', AssessmentHistoryViewSet, basename='assessment-history')
 
 urlpatterns = router.urls
-
