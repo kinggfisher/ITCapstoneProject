@@ -346,9 +346,24 @@ Create a new assessment (run compliance check).
   "asset": 1,
   "equipment_type": "crane_with_outriggers",
   "equipment_model": "Model XYZ",
-  "load_value": 25.0
+  "load_value": 25.0,
+  "notes": "Optional notes"
 }
 ```
+
+**Required Fields**
+
+- `location` (integer, required): Location ID (not name) — must match the asset's location
+- `asset` (integer, required): Asset ID
+- `equipment_type` (string, required): One of: `crane_with_outriggers`, `mobile_crane`, `heavy_vehicle`, `elevated_work_platform`, `storage_load`, `vessel`
+- `load_value` (float, required): Load value in the appropriate unit
+
+**Optional Fields**
+
+- `equipment_model` (string): Model name or description of equipment
+- `notes` (string): Additional notes about the assessment
+
+**Important**: The `location` field MUST be an integer ID, not a location name. Frontend implementations should extract the location ID from the selected asset object.
 
 **Response 201 (PASS)**
 
@@ -471,12 +486,42 @@ Returns available equipment types and their mappings.
 ### Assessment Creation
 
 - Use POST `/api/assessments/` for compliance checks
+- **IMPORTANT**: `location` field must be an integer ID, NOT a location name string
 - Response indicates PASS/FAIL status
 - Store assessment ID for reference
+- Handle both PASS and FAIL responses appropriately
+
+**Correct Implementation Example:**
+
+```javascript
+//  CORRECT - location is integer ID
+const payload = {
+  location: asset.location, // integer ID from asset object
+  asset: asset.id, // integer ID
+  equipment_type: selectedType, // string
+  load_value: parseFloat(value), // float
+};
+
+await api.createAssessment(payload);
+```
+
+**Incorrect Implementation Example:**
+
+```javascript
+//  WRONG - location is string name
+const payload = {
+  location: "Ground Floor", // string - will cause validation error
+  asset: 42,
+  equipment_type: "crane_with_outriggers",
+  load_value: 150.5,
+};
+```
 
 ### Data Relationships
 
 - Locations contain Assets
+  - `Asset.location` returns the location ID (integer)
+  - Use this ID when creating assessments
 - Assets have Load Capacities
 - Assessments reference Location + Asset + Equipment Type
 - Equipment types map to specific capacity types for comparison
