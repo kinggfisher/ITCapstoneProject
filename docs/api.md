@@ -28,3 +28,49 @@ Returns a list of assets.
     "notes": "Max load applies to main beam only."
   }
 ]
+
+## 7) Assessment History API
+
+### GET `/api/assessment-history/`
+
+Returns the current authenticated user's assessment history, ordered by most recent first.
+
+**Authorization**: Bearer token required
+
+**Response 200**
+
+```json
+[
+  {
+    "id": 42,
+    "asset_name": "Berth 5",
+    "location_name": "Port of Bunbury",
+    "equipment_type": "crane_with_outriggers",
+    "load_label": "Max Outrigger Load",
+    "load_value": 850.0,
+    "capacity_metric": "kN",
+    "capacity_limit": 1000.0,
+    "is_compliant": true,
+    "notes": null,
+    "created_at": "2026-04-10T08:32:00Z"
+  }
+]
+```
+
+**Response 200 (no records)**
+
+```json
+[]
+```
+
+**Response 401**
+
+```json
+{
+  "detail": "Authentication credentials were not provided."
+}
+```
+
+**Notes**
+- Only returns assessments created by the requesting user
+- Results are ordered by `created_at` descending (newest first)
