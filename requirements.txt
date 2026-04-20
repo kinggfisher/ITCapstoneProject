@@ -1,0 +1,8 @@
+django
+djangorestframework
+psycopg2-binary
+python-dotenv
+resend
+django-cors-headers
+pdfplumber
+Pillow

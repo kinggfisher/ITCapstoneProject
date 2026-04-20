@@ -1,31 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api, tokens, onAuthFailure } from '../api';
 
 export default function Dashboard() {
   const [assets, setAssets] = useState([]);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchAssets = async () => {
-      const token = localStorage.getItem('access_token');
-      if (!token) return navigate('/'); // 没 Token 踢回登录页
+    if (!tokens.getAccess()) { navigate('/'); return; }
+    const off = onAuthFailure(() => navigate('/'));
 
-      try {
-        const response = await fetch('http://localhost:8000/api/assets/', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setAssets(data);
-        } else if (response.status === 401) {
-          localStorage.removeItem('access_token');
-          navigate('/');
-        }
-      } catch (error) {
-        console.error("Fetch error:", error);
-      }
-    };
-    fetchAssets();
+    api.listAssets()
+      .then(setAssets)
+      .catch((err) => {
+        if (err.status !== 401) setError(err.message);
+      });
+
+    return off;
   }, [navigate]);
 
   return (
@@ -35,11 +27,12 @@ export default function Dashboard() {
           <div className="w-8 h-8 bg-gjp rounded-full flex items-center justify-center text-white font-bold">GJP</div>
           <span className="font-bold text-xl">AssetGuard AI</span>
         </div>
-        <button onClick={() => { localStorage.removeItem('access_token'); navigate('/'); }} className="text-red-600 font-bold">Logout</button>
+        <button onClick={() => { api.logout(); navigate('/'); }} className="text-red-600 font-bold">Logout</button>
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 py-4">
         <h1 className="text-2xl font-bold mb-6">Asset Dashboard</h1>
+        {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>}
         <div className="bg-white rounded-xl shadow-sm border p-6">
           <h2 className="text-lg font-bold border-b pb-2 mb-4">Select Asset for Load Request</h2>
           <table className="w-full text-left border-collapse">
