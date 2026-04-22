@@ -405,7 +405,7 @@ Returns available equipment types and their mappings.
 
 **Response 200**
 
-```json
+````json
 [
   {
     "value": "crane_with_outriggers",
@@ -428,6 +428,29 @@ Returns available equipment types and their mappings.
 Returns the current authenticated user's assessment history, ordered by most recent first.
 
 **Authorization**: Bearer token required
+
+**Query Parameters (all optional)**
+
+- `is_compliant` (string): Filter by compliance status - `"true"` for PASS, `"false"` for FAIL
+- `equipment_type` (string): Filter by equipment type (e.g., `crane_with_outriggers`, `mobile_crane`)
+- `date_from` (string): Start date filter in YYYY-MM-DD format (e.g., `2026-01-01`)
+- `date_to` (string): End date filter in YYYY-MM-DD format (e.g., `2026-12-31`)
+
+**Examples**
+
+```bash
+# Get all user's PASS results
+GET /api/assessment-history/?is_compliant=true
+
+# Get all FAIL results for crane equipment
+GET /api/assessment-history/?is_compliant=false&equipment_type=crane_with_outriggers
+
+# Get assessments in date range
+GET /api/assessment-history/?date_from=2026-01-01&date_to=2026-12-31
+
+# Combine multiple filters
+GET /api/assessment-history/?is_compliant=true&equipment_type=mobile_crane&date_from=2026-03-01
+````
 
 **Response 200**
 
@@ -464,8 +487,82 @@ Returns the current authenticated user's assessment history, ordered by most rec
 ```
 
 **Notes**
+
 - Only returns assessments created by the requesting user
 - Results are ordered by `created_at` descending (newest first)
+- All filters are optional and can be combined
+
+### GET `/api/assessment-history/export_csv/`
+
+Export user's assessments as CSV file with optional filtering.
+
+**Authorization**: Bearer token required
+
+**Query Parameters (all optional)** - Same as assessment-history list above
+
+**Response 200** - CSV file download
+
+CSV columns:
+
+- ID
+- Asset
+- Location
+- Equipment Type
+- Load Value
+- Capacity Metric
+- Compliant (PASS/FAIL)
+- Created At
+
+**Examples**
+
+```bash
+# Export all user's PASS assessments
+GET /api/assessment-history/export_csv/?is_compliant=true
+
+# Export crane assessments from last month
+GET /api/assessment-history/export_csv/?equipment_type=crane_with_outriggers&date_from=2026-03-01&date_to=2026-03-31
+
+# Export all assessments (no filters)
+GET /api/assessment-history/export_csv/
+```
+
+---
+
+## 8) All Assessments CSV Export API
+
+### GET `/api/assessments/export_csv/`
+
+Export all assessments as CSV file (includes all users' assessments). **Admin only**
+
+**Authorization**: Bearer token required (admin user)
+
+**Query Parameters (all optional)** - Same filters as assessment-history
+
+**Response 200** - CSV file download
+
+CSV columns:
+
+- ID
+- Asset
+- Location
+- Equipment Type
+- Load Value
+- Capacity Metric
+- Compliant (PASS/FAIL)
+- Created By (username who created it)
+- Created At
+
+**Examples**
+
+```bash
+# Export all FAIL assessments across all users
+GET /api/assessments/export_csv/?is_compliant=false
+
+# Export all crane assessments this month
+GET /api/assessments/export_csv/?equipment_type=crane_with_outriggers&date_from=2026-04-01&date_to=2026-04-30
+
+# Export all assessments
+GET /api/assessments/export_csv/
 ```
 
 ---
@@ -571,3 +668,137 @@ const payload = {
 - Assets have Load Capacities
 - Assessments reference Location + Asset + Equipment Type
 - Equipment types map to specific capacity types for comparison
+
+### Assessment Filtering and CSV Export
+
+**Filtering Without Download** - Get filtered JSON data:
+
+```javascript
+// Fetch filtered assessments
+async function getFilteredAssessments(filters) {
+  const params = new URLSearchParams();
+
+  if (filters.isCompliant !== undefined) {
+    params.append('is_compliant', filters.isCompliant.toString()); // true or false
+  }
+  if (filters.equipmentType) {
+    params.append('equipment_type', filters.equipmentType);
+  }
+  if (filters.dateFrom) {
+    params.append('date_from', filters.dateFrom); // YYYY-MM-DD format
+  }
+  if (filters.dateTo) {
+    params.append('date_to', filters.dateTo); // YYYY-MM-DD format
+  }
+
+  const response = await fetch(
+    `/api/assessment-history/?${params.toString()}`,
+    {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    }
+  );
+  return await response.json();
+}
+
+// Usage:
+const data = await getFilteredAssessments({
+  isCompliant: true,           // Optional: true for PASS, false for FAIL
+  equipmentType: 'crane_with_outriggers', // Optional
+  dateFrom: '2026-03-01',      // Optional: YYYY-MM-DD
+  dateTo: '2026-03-31'         // Optional: YYYY-MM-DD
+});
+```
+
+**CSV Export for User's Assessments**:
+
+```javascript
+// Export user's assessments as CSV
+async function exportMyAssessments(filters = {}) {
+  const params = new URLSearchParams();
+
+  if (filters.isCompliant !== undefined) {
+    params.append('is_compliant', filters.isCompliant.toString());
+  }
+  if (filters.equipmentType) {
+    params.append('equipment_type', filters.equipmentType);
+  }
+  if (filters.dateFrom) {
+    params.append('date_from', filters.dateFrom);
+  }
+  if (filters.dateTo) {
+    params.append('date_to', filters.dateTo);
+  }
+
+  const url = `/api/assessment-history/export_csv/?${params.toString()}`;
+  const response = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
+  });
+
+  // Trigger download
+  const blob = await response.blob();
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+  link.download = `assessments_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Usage:
+await exportMyAssessments({
+  isCompliant: false,  // Export only FAIL results
+  dateFrom: '2026-03-01'
+});
+```
+
+**CSV Export for All Assessments (Admin Only)**:
+
+```javascript
+// Export all assessments as CSV (admin only)
+async function exportAllAssessments(filters = {}) {
+  const params = new URLSearchParams();
+
+  if (filters.isCompliant !== undefined) {
+    params.append('is_compliant', filters.isCompliant.toString());
+  }
+  if (filters.equipmentType) {
+    params.append('equipment_type', filters.equipmentType);
+  }
+  if (filters.dateFrom) {
+    params.append('date_from', filters.dateFrom);
+  }
+  if (filters.dateTo) {
+    params.append('date_to', filters.dateTo);
+  }
+
+  const url = `/api/assessments/export_csv/?${params.toString()}`;
+  const response = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
+  });
+
+  // Trigger download
+  const blob = await response.blob();
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+  link.download = `all_assessments_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Usage:
+await exportAllAssessments({
+  isCompliant: true,
+  equipmentType: 'mobile_crane'
+});
+```
+
+**Filter Best Practices**:
+
+1. **Date Format**: Always use `YYYY-MM-DD` format for date filters
+2. **Compliance Filter**: Pass `true` or `false` as boolean, will be converted to string
+3. **Equipment Types**: Use exact values from equipment dropdown - `crane_with_outriggers`, `mobile_crane`, `heavy_vehicle`, `elevated_work_platform`, `storage_load`, `vessel`
+4. **Combined Filters**: All filters are optional and can be combined - backend handles missing parameters gracefully
+5. **CSV Download**: Use the blob approach shown above to trigger browser downloads
