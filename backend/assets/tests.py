@@ -1,16 +1,15 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import IntegrityError
 from rest_framework.test import APIClient
 from rest_framework import status
 
 from .models import Location, Asset, LoadCapacity
-from .serializers import LocationSerializer, AssetSerializer, LoadCapacitySerializer
 from .extraction import extract_from_text
 
 
 # Model Tests
-
 class LocationModelTest(TestCase):
     def test_create_location(self):
         loc = Location.objects.create(name="Warehouse A")
@@ -18,7 +17,7 @@ class LocationModelTest(TestCase):
 
     def test_location_name_unique(self):
         Location.objects.create(name="Warehouse A")
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError):
             Location.objects.create(name="Warehouse A")
 
     def test_location_str(self):
@@ -36,7 +35,7 @@ class AssetModelTest(TestCase):
 
     def test_unique_asset_per_location(self):
         Asset.objects.create(location=self.location, name="Drawing-001")
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError):
             Asset.objects.create(location=self.location, name="Drawing-001")
 
     def test_same_name_different_location(self):
@@ -74,7 +73,7 @@ class LoadCapacityModelTest(TestCase):
             metric=LoadCapacity.Metric.T,
             max_load=20.0,
         )
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError):
             LoadCapacity.objects.create(
                 asset=self.asset,
                 name=LoadCapacity.CapacityName.MAX_AXLE_LOAD,
