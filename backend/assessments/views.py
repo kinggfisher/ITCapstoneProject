@@ -29,7 +29,11 @@ class AssessmentViewSet(viewsets.ModelViewSet):
             }, status=status.HTTP_201_CREATED)
 
         # Compliance check failed — send email alert if enabled
-        send_compliance_failure_alert(request.user, instance)
+        # Wrap in try/except: email failures must never crash the API response
+        try:
+            send_compliance_failure_alert(request.user, instance)
+        except Exception as e:
+            print(f"[assessments.views] Unexpected email error: {e}")
 
         return Response({
             "is_compliant": False,
