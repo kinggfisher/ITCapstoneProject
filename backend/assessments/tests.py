@@ -310,13 +310,11 @@ class AssessmentAPITest(TestCase):
             "assessments.views.send_compliance_failure_alert",
             side_effect=Exception("SMTP error")
         ):
-            try:
-                response = self.client.post(
-                    "/api/assessments/", self._create_payload(load_value=75.0)
-                )
-                self.assertIn(response.status_code, [201, 500])
-            except Exception:
-                self.fail("Email failure propagated to the API caller")
+            response = self.client.post(
+                "/api/assessments/", self._create_payload(load_value=75.0)
+            )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertFalse(response.data["is_compliant"])
 
 
 # API Tests — Equipment Options
