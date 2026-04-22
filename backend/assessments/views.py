@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from core.permissions import IsAdmin, IsAdminOrReadOnly
 from core.email_utils import send_compliance_failure_alert
 from .models import Assessment
-from .serializers import AssessmentSerializer
+from .serializers import AssessmentSerializer, AssessmentHistorySerializer
 from .mappings import EQUIPMENT_CAPACITY_MAP
 
 
@@ -54,3 +54,16 @@ class EquipmentOptionsViewSet(viewsets.ViewSet):
                 "capacity_name": capacity_name,
             })
         return Response(options)
+    
+
+class AssessmentHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = AssessmentHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Only return assessments created by the requesting user, ordered by most recent
+        return Assessment.objects.select_related(
+            'asset', 'asset__location'
+        ).filter(
+            created_by=self.request.user
+        ).order_by('-created_at')
