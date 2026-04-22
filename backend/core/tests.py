@@ -251,17 +251,19 @@ class ExtractDesignCriteriaViewTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("error", response.data)
 
-    def test_unsupported_file_type_returns_500(self):
+    def test_unsupported_file_type_returns_400(self):
         from django.core.files.uploadedfile import SimpleUploadedFile
         file = SimpleUploadedFile("doc.txt", b"some content", content_type="text/plain")
         response = self.client.post("/api/extract/", {"file": file}, format="multipart")
-        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
 
-    def test_image_file_returns_500(self):
+    def test_image_file_returns_400(self):
         from django.core.files.uploadedfile import SimpleUploadedFile
         file = SimpleUploadedFile("photo.png", b"\x89PNG\r\n", content_type="image/png")
         response = self.client.post("/api/extract/", {"file": file}, format="multipart")
-        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
 
     @patch("core.views.extract_text_from_file", return_value="Project: BuildingA\nDrawing: DA-001\nMax Point Load: 50 kN")
     def test_valid_pdf_returns_extracted_data(self, mock_extract):
