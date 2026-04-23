@@ -137,6 +137,7 @@ export const api = {
   listAssessments: () => request('/api/assessments/'),
   createAssessment: (payload) =>
     request('/api/assessments/', { method: 'POST', body: payload }),
+  listAssessmentHistory: () => request('/api/assessment-history/'),
 
   // PDF extract (admin)
   extractPdf: (file, autoSave = false) => {

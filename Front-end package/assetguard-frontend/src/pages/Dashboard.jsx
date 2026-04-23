@@ -1,21 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, tokens, onAuthFailure } from '../api';
 
 export default function Dashboard() {
   const [assets, setAssets] = useState([]);
   const [error, setError] = useState('');
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [locationFilter, setLocationFilter] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!tokens.getAccess()) { navigate('/'); return; }
     const off = onAuthFailure(() => navigate('/'));
 
-    api.listAssets()
-      .then(setAssets)
+    Promise.all([api.listAssets(), api.listAssessmentHistory()])
+      .then(([assetsData, historyData]) => {
+        setAssets(assetsData);
+        setHistory(historyData);
+      })
       .catch((err) => {
         if (err.status !== 401) setError(err.message);
-      });
+      })
+      .finally(() => setHistoryLoading(false));
 
     return off;
   }, [navigate]);
@@ -31,7 +38,16 @@ export default function Dashboard() {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 py-4">
-        <h1 className="text-2xl font-bold mb-6">Asset Dashboard</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Asset Dashboard</h1>
+          <input
+            type="text"
+            placeholder=""
+            value={locationFilter}
+            onChange={(e) => setLocationFilter(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-56 focus:outline-none focus:ring-2 focus:ring-gjp"
+          />
+        </div>
         {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>}
         <div className="bg-white rounded-xl shadow-sm border p-6">
           <h2 className="text-lg font-bold border-b pb-2 mb-4">Select Asset for Load Request</h2>
@@ -44,18 +60,55 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {assets.length === 0 ? <tr><td colSpan="3" className="p-3 text-center text-gray-500">No assets found or loading...</td></tr> : null}
-              {assets.map((asset) => (
-                <tr key={asset.id} className="border-b hover:bg-gray-50">
-                  <td className="p-3 font-medium">{asset.name}</td>
-                  <td className="p-3">{asset.location_name}</td>
-                  <td className="p-3">
-                    <button onClick={() => navigate(`/request/${asset.id}`)} className="bg-gjp text-white px-4 py-2 rounded">Select</button>
-                  </td>
-                </tr>
-              ))}
+              {assets.filter(a => a.location_name?.toLowerCase().includes(locationFilter.toLowerCase()) || a.name?.toLowerCase().includes(locationFilter.toLowerCase())).length === 0
+                ? <tr><td colSpan="3" className="p-3 text-center text-gray-500">No assets found or loading...</td></tr>
+                : null}
+              {assets
+                .filter(a => a.location_name?.toLowerCase().includes(locationFilter.toLowerCase()) || a.name?.toLowerCase().includes(locationFilter.toLowerCase()))
+                .map((asset) => (
+                  <tr key={asset.id} className="border-b hover:bg-gray-50">
+                    <td className="p-3 font-medium">{asset.name}</td>
+                    <td className="p-3">{asset.location_name}</td>
+                    <td className="p-3">
+                      <button onClick={() => navigate(`/request/${asset.id}`)} className="bg-gjp text-white px-4 py-2 rounded">Select</button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
+        </div>
+
+        {/* History section */}
+        <div className="bg-white rounded-xl shadow-sm border p-6 mt-8">
+          <h2 className="text-lg font-bold border-b pb-2 mb-4">Your Recent Checks</h2>
+          {historyLoading ? (
+            <p className="text-gray-400 text-sm animate-pulse">Loading history…</p>
+          ) : history.length === 0 ? (
+            <p className="text-gray-400 text-sm">No previous checks found.</p>
+          ) : (
+            <ul className="space-y-3">
+              {history.filter(item => item.location_name?.toLowerCase().includes(locationFilter.toLowerCase()) || item.asset_name?.toLowerCase().includes(locationFilter.toLowerCase())).map((item) => (
+                <li key={item.id} className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border">
+                  <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${item.is_compliant ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-semibold text-sm text-gray-900 truncate">{item.asset_name}</span>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${item.is_compliant ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {item.is_compliant ? 'PASS' : 'FAIL'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5">{item.location_name} · {item.load_label}</p>
+                    <p className="text-xs text-gray-400">
+                      {item.load_value} {item.capacity_metric} &nbsp;/&nbsp; limit {item.capacity_limit} {item.capacity_metric}
+                    </p>
+                  </div>
+                  <span className="text-xs text-gray-400 flex-shrink-0 mt-0.5">
+                    {new Date(item.created_at).toLocaleDateString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>

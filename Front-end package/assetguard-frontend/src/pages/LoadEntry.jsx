@@ -30,8 +30,10 @@ const navigate = useNavigate();
       .then(([assetData, optionsData]) => {
         if (cancelled) return;
         setAsset(assetData);
-        setEquipmentOptions(optionsData);
-        if (optionsData.length > 0) setSelectedEquipment(optionsData[0].value);
+        const assetCapacityNames = new Set(assetData.load_capacities.map(c => c.name));
+        const filtered = optionsData.filter(o => assetCapacityNames.has(o.capacity_name));
+        setEquipmentOptions(filtered);
+        if (filtered.length > 0) setSelectedEquipment(filtered[0].value);
       })
       .catch((err) => { if (!cancelled && err.status !== 401) setError(err.message); })
       .finally(() => { if (!cancelled) setLoading(false); });
