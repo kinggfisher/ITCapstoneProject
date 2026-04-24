@@ -21,7 +21,7 @@ export default function Dashboard() {
   }, [navigate]);
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen">
       <nav className="bg-white shadow-sm p-4 flex justify-between items-center mb-8">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-gjp rounded-full flex items-center justify-center text-white font-bold">GJP</div>
@@ -29,8 +29,11 @@ export default function Dashboard() {
         </div>
         <button
           onClick={() => { api.logout(); navigate('/'); }}
-          className="text-red-600 hover:text-red-700 font-medium text-sm transition-colors"
+          className="text-red-600 hover:text-red-700 font-medium text-sm transition-colors inline-flex items-center gap-1.5"
         >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+          </svg>
           Logout
         </button>
       </nav>
@@ -55,7 +58,12 @@ export default function Dashboard() {
                   <td className="p-3 font-medium">{asset.name}</td>
                   <td className="p-3">{asset.location_name}</td>
                   <td className="p-3">
-                    <button onClick={() => navigate(`/request/${asset.id}`)} className="bg-gjp text-white px-4 py-2 rounded">Select</button>
+                    <button onClick={() => navigate(`/request/${asset.id}`)} className="bg-gjp text-white px-4 py-2 rounded inline-flex items-center gap-1.5">
+                      Select
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                      </svg>
+                    </button>
                   </td>
                 </tr>
               ))}
