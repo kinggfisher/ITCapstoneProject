@@ -27,7 +27,12 @@ export default function Dashboard() {
           <div className="w-8 h-8 bg-gjp rounded-full flex items-center justify-center text-white font-bold">GJP</div>
           <span className="font-bold text-xl">AssetGuard AI</span>
         </div>
-        <button onClick={() => { api.logout(); navigate('/'); }} className="text-red-600 font-bold">Logout</button>
+        <button
+          onClick={() => { api.logout(); navigate('/'); }}
+          className="text-red-600 hover:text-red-700 font-medium text-sm transition-colors"
+        >
+          Logout
+        </button>
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 py-4">
