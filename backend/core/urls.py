@@ -11,6 +11,7 @@ from . import views
 router = DefaultRouter()
 router.register(r'assets', AssetViewSet)
 router.register(r'assessments', AssessmentViewSet)
+router.register(r'assessment-history', AssessmentHistoryViewSet, basename='assessment-history')
 router.register(r'locations', LocationViewSet)
 router.register(r'load-capacities', LoadCapacityViewSet)
 router.register(r'equipment-options', EquipmentOptionsViewSet, basename='equipment-options')
