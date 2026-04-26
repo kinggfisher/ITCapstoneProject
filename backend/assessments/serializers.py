@@ -69,9 +69,10 @@ class AssessmentHistorySerializer(serializers.ModelSerializer):
             'id',
             'asset_name',
             'location_name',
-            'load_label',       # "Max Outrigger Load"
+            'load_label',
             'load_value',
-            'capacity_metric',  
+            'capacity_metric',
+            'capacity_limit',
             'is_compliant',
             'created_at',
         ]
