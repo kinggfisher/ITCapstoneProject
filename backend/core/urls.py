@@ -15,7 +15,6 @@ router.register(r'assessment-history', AssessmentHistoryViewSet, basename='asses
 router.register(r'locations', LocationViewSet)
 router.register(r'load-capacities', LoadCapacityViewSet)
 router.register(r'equipment-options', EquipmentOptionsViewSet, basename='equipment-options')
-router.register(r'assessment-history', AssessmentHistoryViewSet, basename='assessment-history')
 
 urlpatterns = [
     path('', views.home, name='home'),
