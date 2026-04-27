@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from assets.models import Location, Asset, LoadCapacity
-from assets.extraction import extract_from_text
+from assets.extraction import extract_from_text, extract_from_image
 import pdfplumber
 from PIL import Image
 import io
@@ -67,17 +67,18 @@ def extract_design_criteria(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Extract text from file
-        text = extract_text_from_file(file)
-
-        if not text or not text.strip():
-            return Response(
-                {"error": "No text could be extracted from the file"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Extract data from text
-        extracted = extract_from_text(text)
+        # Images go to AI Vision; PDFs use pdfplumber + regex
+        if file.name.lower().endswith(('.jpg', '.jpeg', '.png')):
+            model = request.data.get('model', 'claude')
+            extracted = extract_from_image(file, model=model)
+        else:
+            text = extract_text_from_file(file)
+            if not text or not text.strip():
+                return Response(
+                    {"error": "No text could be extracted from the file"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            extracted = extract_from_text(text)
 
         # If auto_save requested, save to database
         if auto_save:
