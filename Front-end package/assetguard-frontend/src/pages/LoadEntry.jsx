@@ -57,7 +57,17 @@ const navigate = useNavigate();
       if (notes) payload.notes = notes;
 
       const data = await api.createAssessment(payload);
-      setResult({ passed: data.is_compliant, assessmentId: data.assessment_id });
+      const cap = asset.load_capacities.find(c => c.name === activeOption?.capacity_name);
+      setResult({
+        passed: data.is_compliant,
+        assessmentId: data.assessment_id,
+        loadValue: parseFloat(loadValue),
+        capacityLimit: cap?.max_load,
+        capacityMetric: cap?.metric,
+        equipmentLabel: activeOption?.label || selectedEquipment,
+        equipmentModel: equipmentModel || '—',
+        notes: notes || null,
+      });
     } catch (err) {
       setError(err.message || 'Submission failed.');
     } finally {
@@ -79,26 +89,65 @@ const navigate = useNavigate();
     const passed = result.passed;
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-        <div className={`bg-white rounded-2xl shadow-xl max-w-sm w-full overflow-hidden`}>
-          <div className={`p-6 text-center ${passed ? 'bg-green-500' : 'bg-red-500'}`}>
-            <div className="text-5xl mb-2">{passed ? '✅' : '⚠️'}</div>
-            <h2 className="text-white text-3xl font-black tracking-wide">
-              {passed ? 'COMPLIANT' : 'NON-COMPLIANT'}
+        <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full overflow-hidden">
+          {/* Email-style header */}
+          <div className={`px-6 py-5 ${passed ? 'bg-green-500' : 'bg-red-500'}`}>
+            <h2 className="text-white text-lg font-bold">
+              {passed ? '✅ Compliance Check Passed' : '⚠️ Compliance Check Failed'}
             </h2>
-            <p className="text-white/80 mt-1 text-sm">Assessment #{result.assessmentId}</p>
+            <p className="text-white/75 text-xs mt-0.5">Assessment #{result.assessmentId}</p>
           </div>
-          <div className="p-6 text-center">
-            <p className="text-gray-600 text-sm mb-1">
-              <span className="font-semibold">{asset?.name}</span> — {asset?.location_name}
+
+          {/* Email-style body */}
+          <div className="bg-gray-50 px-6 py-5 border-x border-b rounded-b-2xl">
+            <p className="text-gray-700 text-sm mb-4">
+              A compliance check on <strong>{asset?.name}</strong> has{' '}
+              <span className={`font-bold ${passed ? 'text-green-600' : 'text-red-600'}`}>
+                {passed ? 'PASSED' : 'FAILED'}
+              </span>. Here are the details:
             </p>
-            <p className="text-gray-500 text-sm">
-              {passed
-                ? 'The load is within the permitted capacity for this asset.'
-                : 'The load exceeds the permitted capacity. An alert has been sent to the responsible party.'}
-            </p>
+
+            {/* Striped details table */}
+            <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+              <tbody>
+                <tr className="bg-gray-100">
+                  <td className="px-4 py-2.5 font-semibold text-gray-500 w-2/5">Location</td>
+                  <td className="px-4 py-2.5 text-gray-900">{asset?.location_name}</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-semibold text-gray-500">Asset</td>
+                  <td className="px-4 py-2.5 text-gray-900">{asset?.name}</td>
+                </tr>
+                <tr className="bg-gray-100">
+                  <td className="px-4 py-2.5 font-semibold text-gray-500">Equipment Type</td>
+                  <td className="px-4 py-2.5 text-gray-900">{result.equipmentLabel}</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-semibold text-gray-500">Equipment Model</td>
+                  <td className="px-4 py-2.5 text-gray-900">{result.equipmentModel}</td>
+                </tr>
+                <tr className="bg-gray-100">
+                  <td className="px-4 py-2.5 font-semibold text-gray-500">Load Applied</td>
+                  <td className={`px-4 py-2.5 font-bold ${passed ? 'text-gray-900' : 'text-red-600'}`}>
+                    {result.loadValue} {result.capacityMetric}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-semibold text-gray-500">Capacity Limit</td>
+                  <td className="px-4 py-2.5 text-gray-900">{result.capacityLimit} {result.capacityMetric}</td>
+                </tr>
+                {result.notes && (
+                  <tr className="bg-gray-100">
+                    <td className="px-4 py-2.5 font-semibold text-gray-500">Notes</td>
+                    <td className="px-4 py-2.5 text-gray-900">{result.notes}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+
             <button
               onClick={() => navigate('/dashboard')}
-              className="mt-6 w-full bg-gjp hover:bg-[#097a76] text-white font-bold py-3 rounded-xl transition-all"
+              className="mt-5 w-full bg-gjp hover:bg-[#097a76] text-white font-bold py-3 rounded-xl transition-all"
             >
               Back to Dashboard
             </button>
@@ -110,6 +159,10 @@ const navigate = useNavigate();
                 Run Another Check
               </button>
             )}
+
+            <p className="text-gray-400 text-xs mt-5 pt-4 border-t border-gray-200">
+              This is an automated alert from <strong>AssetGuard</strong>. Do not reply to this email.
+            </p>
           </div>
         </div>
       </div>

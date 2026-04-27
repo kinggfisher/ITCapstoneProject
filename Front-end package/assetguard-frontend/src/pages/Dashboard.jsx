@@ -50,7 +50,7 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold">Asset Dashboard</h1>
           <input
             type="text"
-            placeholder=""
+            placeholder="Filter by name or location"
             value={locationFilter}
             onChange={(e) => setLocationFilter(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-56 focus:outline-none focus:ring-2 focus:ring-gjp"
@@ -67,6 +67,7 @@ export default function Dashboard() {
                 <th className="p-3">Action</th>
               </tr>
             </thead>
+            <tbody>
               {assets.filter(a => a.location_name?.toLowerCase().includes(locationFilter.toLowerCase()) || a.name?.toLowerCase().includes(locationFilter.toLowerCase())).length === 0
               ? <tr><td colSpan="3" className="p-3 text-center text-gray-500">No assets found or loading...</td></tr>
               : null}
