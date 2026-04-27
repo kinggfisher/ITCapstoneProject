@@ -16,6 +16,7 @@
     </style>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen">
+{% csrf_token %}
 <!-- Navbar on top, hidden before logging, including logo, app name, user label and exit button -->
     <nav id="navbar" class="bg-white shadow-sm hidden-page">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -184,12 +185,14 @@
 <!-- Admin Dashboard for data ingestion and AI extraction results -->
     <div id="admin-dashboard" class="hidden-page max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 class="text-2xl font-bold text-gray-800 mb-6">Admin Portal - Data Ingestion</h1>
-        <!-- Module 1: Upload Engineering Drawings (Drag and drop the upload area) -->
+        <!-- Module 1: Upload Engineering Drawings -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">1. Upload Engineering Drawings</h2>
-            <div class="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:bg-gray-50 transition-colors cursor-pointer">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">1. Upload Engineering Drawing</h2>
+            <input type="file" id="drawing-file-input" accept=".pdf,.jpg,.jpeg,.png" class="hidden">
+            <div id="upload-zone" onclick="document.getElementById('drawing-file-input').click()"
+                class="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:bg-gray-50 transition-colors cursor-pointer">
                 <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                <p class="text-gray-600 font-medium">Drag & Drop PDF/JPG files here</p>
+                <p id="upload-label" class="text-gray-600 font-medium">Drag & Drop PDF/JPG files here</p>
                 <p class="text-sm text-gray-400 mt-1">or click to browse local files</p>
             </div>
         </div>
@@ -199,38 +202,42 @@
             <div class="flex items-end gap-4 mb-8">
                 <div class="flex-grow">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Select Model</label>
-                    <select class="w-full border border-gray-300 rounded-lg p-3 outline-none">
-                        <option>Google Gemini Pro Vision</option>
-                        <option>OpenAI GPT-4o</option>
+                    <select id="model-select" class="w-full border border-gray-300 rounded-lg p-3 outline-none">
+                        <option value="claude">Claude Haiku (Anthropic)</option>
+                        <option value="gemini">Gemini 1.5 Flash (Google)</option>
                     </select>
                 </div>
-                <button class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-lg shadow transition-all">
+                <button onclick="runExtraction(false)" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-lg shadow transition-all">
                     Extract Design Limits
+                </button>
+                <button onclick="runExtraction(true)" class="bg-gjp hover-bg-gjp text-white font-bold py-3 px-8 rounded-lg shadow transition-all">
+                    Extract &amp; Save to Database
                 </button>
             </div>
 
-            <h3 class="text-md font-semibold text-gray-700 border-b pb-2 mb-4">Extraction Results (Pending Database Sync)</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-50 text-gray-600 text-sm border-b">
-                            <th class="p-3 font-medium">Asset Name</th>
-                            <th class="p-3 font-medium">Max Load (kg)</th>
-                            <th class="p-3 font-medium">Material</th>
-                            <th class="p-3 font-medium">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-sm text-gray-700">
-                        <tr class="border-b">
-                            <td class="p-3 font-medium">UWA Library Bridge</td>
-                            <td class="p-3">2000</td>
-                            <td class="p-3">Reinforced Concrete</td>
-                            <td class="p-3">
-                                <button class="text-sm bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded shadow">Save to Supabase</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div id="extraction-error" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"></div>
+            <div id="extraction-loading" class="hidden text-gray-500 text-sm animate-pulse mb-4">Analysing drawing…</div>
+
+            <div id="extraction-results" class="hidden">
+                <h3 class="text-md font-semibold text-gray-700 border-b pb-2 mb-4">Extraction Results</h3>
+                <div class="mb-3 text-sm text-gray-600">
+                    <span class="font-medium">Project:</span> <span id="result-project">—</span>
+                    &nbsp;&nbsp;
+                    <span class="font-medium">Drawing:</span> <span id="result-drawing">—</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-600 text-sm border-b">
+                                <th class="p-3 font-medium">Capacity Type</th>
+                                <th class="p-3 font-medium">Value</th>
+                                <th class="p-3 font-medium">Unit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="result-table-body" class="text-sm text-gray-700"></tbody>
+                    </table>
+                </div>
+                <div id="saved-notice" class="hidden mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm font-medium"></div>
             </div>
         </div>
     </div>
@@ -290,17 +297,86 @@
             }
         }
 
-        // Display a pop-up window showing compliance check results
-        // Remove the hidden-page class to make the pop-up window visible
         function showResultModal() {
             document.getElementById('result-modal').classList.remove('hidden-page');
         }
-
-        // Close the pop-up and return to the user dashboard.
-        // Hide the pop-up first, then navigate back to the dashboard page.
         function closeModal() {
             document.getElementById('result-modal').classList.add('hidden-page');
             navigateTo('user-dashboard');
+        }
+
+        function getCookie(name) {
+            const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? match[2] : '';
+        }
+
+        // File upload
+        const fileInput = document.getElementById('drawing-file-input');
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (file) document.getElementById('upload-label').textContent = '✓ ' + file.name;
+        });
+
+        async function runExtraction(autoSave) {
+            const file = fileInput.files[0];
+            if (!file) { alert('Please select a file first.'); return; }
+
+            document.getElementById('extraction-error').classList.add('hidden');
+            document.getElementById('extraction-results').classList.add('hidden');
+            document.getElementById('saved-notice').classList.add('hidden');
+            document.getElementById('extraction-loading').classList.remove('hidden');
+
+            const model = document.getElementById('model-select').value;
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('auto_save', autoSave ? 'true' : 'false');
+            formData.append('model', model);
+
+            try {
+                const res = await fetch('/api/extract/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                    body: formData,
+                });
+                const data = await res.json();
+                document.getElementById('extraction-loading').classList.add('hidden');
+
+                if (!res.ok) {
+                    const errEl = document.getElementById('extraction-error');
+                    errEl.textContent = data.error || 'Extraction failed.';
+                    errEl.classList.remove('hidden');
+                    return;
+                }
+
+                document.getElementById('result-project').textContent = data.project || '—';
+                document.getElementById('result-drawing').textContent = data.drawing_number || '—';
+
+                const tbody = document.getElementById('result-table-body');
+                tbody.innerHTML = '';
+                (data.capacities || []).forEach(c => {
+                    tbody.innerHTML += `<tr class="border-b">
+                        <td class="p-3 font-medium">${c.name}</td>
+                        <td class="p-3">${c.value}</td>
+                        <td class="p-3">${c.metric}</td>
+                    </tr>`;
+                });
+                if ((data.capacities || []).length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-gray-400">No capacities found.</td></tr>';
+                }
+
+                document.getElementById('extraction-results').classList.remove('hidden');
+
+                if (autoSave && data.saved_ids) {
+                    const notice = document.getElementById('saved-notice');
+                    notice.textContent = `Saved to database — Asset ID: ${data.saved_ids.asset_id}, Capacities: ${data.saved_ids.capacity_ids.join(', ')}`;
+                    notice.classList.remove('hidden');
+                }
+            } catch (e) {
+                document.getElementById('extraction-loading').classList.add('hidden');
+                const errEl = document.getElementById('extraction-error');
+                errEl.textContent = 'Network error: ' + e.message;
+                errEl.classList.remove('hidden');
+            }
         }
     </script>
 </body>

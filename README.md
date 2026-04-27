@@ -74,7 +74,17 @@ SECRET_KEY=<ask-for-secret-key>
 # Local Development Fallback
 # Set to 'true' to use SQLite instead of connecting to the remote Postgres DB
 USE_SQLITE=true
+
+# AI Extraction — required for the Admin Portal image upload feature
+ANTHROPIC_API_KEY=<your-anthropic-api-key>
+GOOGLE_API_KEY=<your-google-api-key>
 ```
+
+> **Getting API keys**
+> - **Anthropic (Claude Haiku):** Sign up at [console.anthropic.com](https://console.anthropic.com), go to *API Keys*, and create a new key.
+> - **Google (Gemini 1.5 Flash):** Visit [aistudio.google.com](https://aistudio.google.com), click *Get API key*, and generate one in Google AI Studio.
+>
+> Both keys are personal — do not share or commit them. If you only need one model, you can leave the other key blank; the Admin Portal will still work with whichever key is provided.
 
 ### Setup
 ```bash
