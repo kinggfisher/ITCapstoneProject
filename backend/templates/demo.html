@@ -42,18 +42,21 @@
             </div>
             <form class="space-y-6" onsubmit="event.preventDefault();">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Email Address</label>
-                    <input type="email" value="contractor@example.com" class="mt-1 w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0b948f] outline-none">
+                    <label class="block text-sm font-medium text-gray-700">Username</label>
+                    <input id="login-username" type="text" placeholder="Username" class="mt-1 w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0b948f] outline-none">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Password</label>
-                    <input type="password" value="password123" class="mt-1 w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0b948f] outline-none">
+                    <input id="login-password" type="password" placeholder="Password" class="mt-1 w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0b948f] outline-none">
                 </div>
-                <div class="flex space-x-3 pt-4">
+                <p id="login-error" class="hidden text-red-500 text-sm text-center"></p>
+                <div class="pt-4">
+                    <!-- Login (User) temporarily hidden
                     <button onclick="loginAs('contractor')" class="w-1/2 bg-gjp hover-bg-gjp text-white font-bold py-3 rounded-lg shadow-md transition-all">
                         Login (User)
                     </button>
-                    <button onclick="loginAs('admin')" class="w-1/2 bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 rounded-lg shadow-md transition-all">
+                    -->
+                    <button id="admin-login-btn" onclick="adminLogin()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 rounded-lg shadow-md transition-all">
                         Login (Admin)
                     </button>
                 </div>
@@ -281,11 +284,55 @@
             
             // Toggle navbar visibility
             if(pageId === 'login-page') {
+                localStorage.removeItem('access_token');
                 document.getElementById('navbar').classList.add('hidden-page');
             } else {
                 document.getElementById('navbar').classList.remove('hidden-page');
             }
         }
+        async function adminLogin() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const btn = document.getElementById('admin-login-btn');
+            const errorEl = document.getElementById('login-error');
+
+            btn.disabled = true;
+            btn.textContent = 'Signing in…';
+            errorEl.classList.add('hidden');
+
+            try {
+                const res = await fetch('http://127.0.0.1:8000/api/token/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                });
+
+                if (!res.ok) {
+                    errorEl.textContent = 'Invalid username or password.';
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+
+                const data = await res.json();
+                const payload = JSON.parse(atob(data.access.split('.')[1]));
+
+                if (!payload.is_superuser) {
+                    errorEl.textContent = 'Access denied: admin privileges required.';
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+
+                localStorage.setItem('access_token', data.access);
+                loginAs('admin');
+            } catch (_) {
+                errorEl.textContent = 'Could not connect to backend.';
+                errorEl.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Login (Admin)';
+            }
+        }
+
         // Login function: redirects to different dashboards based on the user's role.
         function loginAs(role) {
             if(role === 'admin') {
@@ -309,6 +356,22 @@
             const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
             return match ? match[2] : '';
         }
+
+        // Auto-login if valid token exists
+        (function () {
+            const token = localStorage.getItem('access_token');
+            if (!token) return;
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (payload.is_superuser && payload.exp * 1000 > Date.now()) {
+                    loginAs('admin');
+                } else {
+                    localStorage.removeItem('access_token');
+                }
+            } catch (_) {
+                localStorage.removeItem('access_token');
+            }
+        })();
 
         // File upload
         const fileInput = document.getElementById('drawing-file-input');
