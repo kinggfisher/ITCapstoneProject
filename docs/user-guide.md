@@ -34,11 +34,11 @@ All users (engineers, contractors, asset managers) are created in Django Admin.
 
 1. In the admin panel, go to **Users** → **Add User**
 2. Set **Username** to the user's email address
-3. Set **Email** to the same email address
-4. Set a temporary password and share it with the user
+3. Set a password and click **Save and continue editing**
+4. On the next page, set **Email** to the same email address
 5. Click **Save**
 
-> The system uses email addresses as usernames throughout. Always set both fields to the same email to avoid login issues.
+> Users cannot change their own passwords. The admin is responsible for setting and distributing credentials directly. The system uses email addresses as usernames throughout — always set both fields to the same email to avoid login issues.
 
 ### 4. Manage Assets and Load Limits (CRUD)
 
