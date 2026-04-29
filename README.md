@@ -58,27 +58,13 @@ Engineers, contractors, and asset managers can log in, select an asset, enter a 
 
 ### Environment Variables
 
-Create a file named `.env` in the root of your project directory (`ITCapstoneProject/.env`). You will need the secret keys (shared internally by the team) to fill in the missing values:
+A template is provided at `.env.example`. Copy it and fill in the values:
 
-```env
-# Database Configuration (Supabase / PostgreSQL)
-DB_HOST=<ask-for-db-host>
-DB_PASSWORD=<ask-for-password>
-DB_NAME=postgres
-DB_USER=<ask-for-db-user>
-
-
-# Django Configuration
-SECRET_KEY=<ask-for-secret-key>
-
-# Local Development Fallback
-# Set to 'true' to use SQLite instead of connecting to the remote Postgres DB
-USE_SQLITE=true
-
-# AI Extraction — required for the Admin Portal image upload feature
-ANTHROPIC_API_KEY=<your-anthropic-api-key>
-GOOGLE_API_KEY=<your-google-api-key>
+```bash
+cp .env.example .env
 ```
+
+The `.env` file must be placed at the project root (`ITCapstoneProject/.env`). It is listed in `.gitignore` and will not be committed.
 
 > **Getting API keys**
 > - **Anthropic (Claude Haiku):** Sign up at [console.anthropic.com](https://console.anthropic.com), go to *API Keys*, and create a new key.
