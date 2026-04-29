@@ -93,3 +93,36 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+### Run
+
+```bash
+python manage.py migrate
+python manage.py runserver
+```
+
+The API will be available at `http://127.0.0.1:8000`.
+
+---
+
+## Getting Started (Frontend)
+
+### Prerequisites
+- Node.js 18+
+
+### Setup & Run
+
+```bash
+cd "Front-end package/assetguard-frontend"
+npm install
+npm run dev
+```
+
+The app will be available at `http://localhost:5173` (Vite default).
+
+---
+
+## Documentation
+
+- [User Guide](docs/user-guide.md) — admin setup, user management, and end-user workflow
+
