@@ -34,3 +34,16 @@ class Assessment(models.Model):
 
     def __str__(self):
         return f"{self.asset.name} - {'PASS' if self.is_compliant else 'FAIL'}"
+
+
+class EquipmentCapacityMapping(models.Model):
+    equipment_type = models.CharField(
+        max_length=64, choices=Assessment.EquipmentType.choices, unique=True
+    )
+    capacity_name = models.CharField(
+        max_length=64, choices=LoadCapacity.CapacityName.choices
+    )
+    load_label = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.equipment_type} → {self.capacity_name}"
