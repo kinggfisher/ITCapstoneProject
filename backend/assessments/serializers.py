@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Assessment
-from .mappings import EQUIPMENT_CAPACITY_MAP
+from .mappings import get_equipment_capacity_map
 from assets.models import LoadCapacity
 
 
@@ -32,7 +32,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
             })
 
         # Look up capacity mapping
-        mapping = EQUIPMENT_CAPACITY_MAP.get(equipment_type)
+        mapping = get_equipment_capacity_map().get(equipment_type)
         if not mapping:
             raise serializers.ValidationError({
                 "equipment_type": f"No mapping found for '{equipment_type}'."
@@ -78,5 +78,5 @@ class AssessmentHistorySerializer(serializers.ModelSerializer):
         ]
 
     def get_load_label(self, obj):
-        mapping = EQUIPMENT_CAPACITY_MAP.get(obj.equipment_type)
+        mapping = get_equipment_capacity_map().get(obj.equipment_type)
         return mapping[1] if mapping else obj.capacity_name

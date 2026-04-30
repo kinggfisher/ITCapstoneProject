@@ -6,7 +6,7 @@ from core.permissions import IsAdmin, IsAdminOrReadOnly
 from core.email_utils import send_compliance_failure_alert
 from .models import Assessment
 from .serializers import AssessmentSerializer, AssessmentHistorySerializer
-from .mappings import EQUIPMENT_CAPACITY_MAP
+from .mappings import get_equipment_capacity_map
 from django.http import HttpResponse
 from django.utils import timezone
 from datetime import datetime, time
@@ -136,7 +136,7 @@ class EquipmentOptionsViewSet(viewsets.ViewSet):
 
     def list(self, request):
         options = []
-        for value, (capacity_name, load_label) in EQUIPMENT_CAPACITY_MAP.items():
+        for value, (capacity_name, load_label) in get_equipment_capacity_map().items():
             display = dict(Assessment.EquipmentType.choices).get(value, value)
             options.append({
                 "value": value,
