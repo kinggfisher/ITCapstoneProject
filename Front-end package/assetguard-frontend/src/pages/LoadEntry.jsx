@@ -41,6 +41,7 @@ const navigate = useNavigate();
   }, [assetId]);
 
   const activeOption = equipmentOptions.find(o => o.value === selectedEquipment);
+  const activeCap = asset?.load_capacities?.find(c => c.name === activeOption?.capacity_name);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -268,11 +269,9 @@ const navigate = useNavigate();
                   required
                   className="w-full border border-gray-300 p-3 pr-16 rounded-lg focus:ring-2 focus:ring-gjp outline-none"
                 />
-                {activeOption && (
+                {activeCap && (
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium pointer-events-none">
-                    {activeOption.load_label.toLowerCase().includes('displacement') ? 't' :
-                     activeOption.load_label.toLowerCase().includes('axle') ? 't' :
-                     activeOption.load_label.toLowerCase().includes('uniform') ? 'kPa' : 'kN'}
+                    {activeCap.metric}
                   </span>
                 )}
               </div>
