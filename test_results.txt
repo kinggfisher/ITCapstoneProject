@@ -1,0 +1,76 @@
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+Found 37 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: corsheaders, messages, rest_framework, staticfiles
+  Apply all migrations: admin, assessments, assets, auth, contenttypes, sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying auth.0001_initial... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying assets.0001_initial... OK
+  Applying assessments.0001_initial... OK
+  Applying assessments.0002_assessment_created_by_alter_assessment_capacity_name... OK
+  Applying assets.0002_alter_loadcapacity_name... OK
+  Applying assets.0003_asset_drawing_file... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying sessions.0001_initial...test_admin_can_create_asset (assets.tests.AssetAPITest.test_admin_can_create_asset) ... ok
+test_filter_assets_by_location (assets.tests.AssetAPITest.test_filter_assets_by_location) ... ok
+test_list_assets (assets.tests.AssetAPITest.test_list_assets) ... ok
+test_regular_user_cannot_create_asset (assets.tests.AssetAPITest.test_regular_user_cannot_create_asset) ... ok
+test_retrieve_asset_includes_load_capacities (assets.tests.AssetAPITest.test_retrieve_asset_includes_load_capacities) ... ok
+test_retrieve_asset_includes_location_name (assets.tests.AssetAPITest.test_retrieve_asset_includes_location_name) ... ok
+test_asset_drawing_file_optional (assets.tests.AssetModelTest.test_asset_drawing_file_optional) ... ok
+test_create_asset (assets.tests.AssetModelTest.test_create_asset) ... ok
+test_same_name_different_location (assets.tests.AssetModelTest.test_same_name_different_location) ... ok
+test_unique_asset_per_location (assets.tests.AssetModelTest.test_unique_asset_per_location) ... ok
+test_case_insensitive_patterns (assets.tests.ExtractionTest.test_case_insensitive_patterns) ... ok
+test_decimal_values (assets.tests.ExtractionTest.test_decimal_values) ... ok
+test_extracts_displacement_size (assets.tests.ExtractionTest.test_extracts_displacement_size) ... ok
+test_extracts_drawing_number (assets.tests.ExtractionTest.test_extracts_drawing_number) ... ok
+test_extracts_max_axle_load (assets.tests.ExtractionTest.test_extracts_max_axle_load) ... ok
+test_extracts_max_point_load (assets.tests.ExtractionTest.test_extracts_max_point_load) ... ok
+test_extracts_project (assets.tests.ExtractionTest.test_extracts_project) ... ok
+test_extracts_uniform_distributed_load (assets.tests.ExtractionTest.test_extracts_uniform_distributed_load) ... ok
+test_missing_drawing_returns_none (assets.tests.ExtractionTest.test_missing_drawing_returns_none) ... ok
+test_missing_project_returns_none (assets.tests.ExtractionTest.test_missing_project_returns_none) ... ok
+test_no_capacities_returns_empty_list (assets.tests.ExtractionTest.test_no_capacities_returns_empty_list) ... ok
+test_raw_text_preserved (assets.tests.ExtractionTest.test_raw_text_preserved) ... ok
+test_admin_can_create_load_capacity (assets.tests.LoadCapacityAPITest.test_admin_can_create_load_capacity) ... ok
+test_list_load_capacities (assets.tests.LoadCapacityAPITest.test_list_load_capacities) ... ok
+test_regular_user_cannot_create_load_capacity (assets.tests.LoadCapacityAPITest.test_regular_user_cannot_create_load_capacity) ... ok
+test_capacity_name_choices (assets.tests.LoadCapacityModelTest.test_capacity_name_choices) ... ok
+test_create_load_capacity (assets.tests.LoadCapacityModelTest.test_create_load_capacity) ... ok
+test_unique_capacity_name_per_asset (assets.tests.LoadCapacityModelTest.test_unique_capacity_name_per_asset) ... ok
+test_admin_can_create_location (assets.tests.LocationAPITest.test_admin_can_create_location) ... ok
+test_admin_can_delete_location (assets.tests.LocationAPITest.test_admin_can_delete_location) ... ok
+test_list_locations_authenticated (assets.tests.LocationAPITest.test_list_locations_authenticated) ... ok
+test_list_locations_unauthenticated (assets.tests.LocationAPITest.test_list_locations_unauthenticated) ... ok
+test_regular_user_cannot_create_location (assets.tests.LocationAPITest.test_regular_user_cannot_create_location) ... ok
+test_regular_user_cannot_delete_location (assets.tests.LocationAPITest.test_regular_user_cannot_delete_location) ... ok
+test_create_location (assets.tests.LocationModelTest.test_create_location) ... ok
+test_location_name_unique (assets.tests.LocationModelTest.test_location_name_unique) ... ok
+test_location_str (assets.tests.LocationModelTest.test_location_str) ... ok
+
+----------------------------------------------------------------------
+Ran 37 tests in 3.113s
+
+OK
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+ OK
+System check identified no issues (0 silenced).

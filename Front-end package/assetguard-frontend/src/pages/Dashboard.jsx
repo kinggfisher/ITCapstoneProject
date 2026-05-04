@@ -8,7 +8,28 @@ export default function Dashboard() {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [locationFilter, setLocationFilter] = useState('');
+  const [exporting, setExporting] = useState(false);
   const navigate = useNavigate();
+
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const data = await api.exportMyAssessments();
+      const blob = new Blob([data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `assessments_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err.message || 'Failed to export CSV');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   useEffect(() => {
     if (!tokens.getAccess()) { navigate('/'); return; }
@@ -93,7 +114,20 @@ export default function Dashboard() {
 
         {/* History section */}
         <div className="bg-white rounded-xl shadow-sm border p-6 mt-8">
-          <h2 className="text-lg font-bold border-b pb-2 mb-4">Your Recent Checks</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold">Your Recent Checks</h2>
+            <button
+              onClick={handleExportCSV}
+              disabled={exporting || history.length === 0}
+              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-2 rounded inline-flex items-center gap-1.5 text-sm font-medium transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33A3.75 3.75 0 0 1 21 12a4.5 4.5 0 0 1-4.5 4.5" />
+              </svg>
+              {exporting ? 'Exporting...' : 'Export CSV'}
+            </button>
+          </div>
+          <div className="border-b pb-2 mb-4" />
           {historyLoading ? (
             <p className="text-gray-400 text-sm animate-pulse">Loading history…</p>
           ) : history.length === 0 ? (
