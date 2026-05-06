@@ -227,7 +227,7 @@ const navigate = useNavigate();
               </select>
               {activeOption && (
                 <p className="text-xs text-gray-400 mt-1">
-                  Checks against: <span className="font-medium text-gray-600">{activeOption.capacity_name}</span>
+                  Checks against: <span className="font-medium text-gray-600">{activeOption.load_label}</span>
                 </p>
               )}
             </div>
@@ -252,7 +252,7 @@ const navigate = useNavigate();
                 {activeOption ? activeOption.load_label : 'Load Value'}
                 {activeOption && (
                   <span className="ml-1 text-xs text-gray-400 font-normal">
-                    (checked against {activeOption.capacity_name.replace(/_/g, ' ')})
+                    (checked against {activeOption.load_label})
                   </span>
                 )}
                 <span className="text-red-500"> *</span>
