@@ -107,8 +107,6 @@ export async function request(path, { method = 'GET', body, auth = true, headers
   return data;
 }
 
-// ─── High-level API helpers (mirror docs/api.md) ────────────────────────────
-
 export const api = {
   // Auth
   login: (username, password) =>
@@ -122,22 +120,59 @@ export const api = {
     return request(`/api/assets/${qs ? `?${qs}` : ''}`);
   },
   getAsset: (id) => request(`/api/assets/${id}/`),
+  createAsset: (payload) =>
+    request('/api/assets/', { method: 'POST', body: payload }),
+  updateAsset: (id, payload) =>
+    request(`/api/assets/${id}/`, { method: 'PUT', body: payload }),
+  deleteAsset: (id) =>
+    request(`/api/assets/${id}/`, { method: 'DELETE' }),
 
   // Locations
   listLocations: () => request('/api/locations/'),
   getLocation: (id) => request(`/api/locations/${id}/`),
+  createLocation: (payload) =>
+    request('/api/locations/', { method: 'POST', body: payload }),
+  updateLocation: (id, payload) =>
+    request(`/api/locations/${id}/`, { method: 'PUT', body: payload }),
+  deleteLocation: (id) =>
+    request(`/api/locations/${id}/`, { method: 'DELETE' }),
 
   // Load capacities
   listLoadCapacities: () => request('/api/load-capacities/'),
+  getLoadCapacity: (id) => request(`/api/load-capacities/${id}/`),
+  createLoadCapacity: (payload) =>
+    request('/api/load-capacities/', { method: 'POST', body: payload }),
+  updateLoadCapacity: (id, payload) =>
+    request(`/api/load-capacities/${id}/`, { method: 'PUT', body: payload }),
+  deleteLoadCapacity: (id) =>
+    request(`/api/load-capacities/${id}/`, { method: 'DELETE' }),
 
   // Equipment options
   listEquipmentOptions: () => request('/api/equipment-options/'),
 
   // Assessments
   listAssessments: () => request('/api/assessments/'),
+  getAssessment: (id) => request(`/api/assessments/${id}/`),
   createAssessment: (payload) =>
     request('/api/assessments/', { method: 'POST', body: payload }),
-  listAssessmentHistory: () => request('/api/assessment-history/'),
+  updateAssessment: (id, payload) =>
+    request(`/api/assessments/${id}/`, { method: 'PUT', body: payload }),
+  deleteAssessment: (id) =>
+    request(`/api/assessments/${id}/`, { method: 'DELETE' }),
+
+  // Assessment History
+  listAssessmentHistory: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/api/assessment-history/${qs ? `?${qs}` : ''}`);
+  },
+  exportMyAssessments: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/api/assessment-history/export_csv/${qs ? `?${qs}` : ''}`);
+  },
+  exportAllAssessments: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/api/assessments/export_csv/${qs ? `?${qs}` : ''}`);
+  },
 
   // PDF extract (admin)
   extractPdf: (file, autoSave = false) => {
