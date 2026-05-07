@@ -8,4 +8,4 @@ class AssessmentAdmin(admin.ModelAdmin):
 
 @admin.register(EquipmentCapacityMapping)
 class EquipmentCapacityMappingAdmin(admin.ModelAdmin):
-    list_display = ['equipment_type', 'capacity_name', 'load_label']
+    list_display = ['equipment_type', 'equipment_label', 'capacity_alias']

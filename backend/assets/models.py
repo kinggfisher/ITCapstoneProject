@@ -49,3 +49,11 @@ class LoadCapacity(models.Model):
 
     def __str__(self):
         return f"{self.asset} - {self.get_name_display()}: {self.max_load} {self.metric}"
+
+
+class LoadCapacityAlias(models.Model):
+    capacity_name = models.CharField(max_length=64, choices=LoadCapacity.CapacityName.choices)
+    alias = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return f"{self.alias} ({self.capacity_name})"
