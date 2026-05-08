@@ -6,7 +6,7 @@ from core.permissions import IsAdmin, IsAdminOrReadOnly
 from core.email_utils import send_compliance_failure_alert
 from .models import Assessment
 from .serializers import AssessmentSerializer, AssessmentHistorySerializer
-from .mappings import EQUIPMENT_CAPACITY_MAP
+from .mappings import get_equipment_capacity_map
 from django.http import HttpResponse
 from django.utils import timezone
 from datetime import datetime, time
@@ -135,15 +135,14 @@ class EquipmentOptionsViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request):
+        from .models import EquipmentCapacityMapping
         options = []
-        for value, (capacity_name, load_label) in EQUIPMENT_CAPACITY_MAP.items():
-            display = dict(Assessment.EquipmentType.choices).get(value, value)
+        for mapping in EquipmentCapacityMapping.objects.select_related('capacity_alias').all():
             options.append({
-                "value": value,
-                "label": display,
-                "load_label": load_label,
-                # from load_capacities in GET /api/assets/:id/ using capacity_name to match
-                "capacity_name": capacity_name,
+                "value": mapping.equipment_type,
+                "label": mapping.equipment_label,
+                "load_label": mapping.capacity_alias.alias,
+                "capacity_name": mapping.capacity_alias.capacity_name,
             })
         return Response(options)
     
