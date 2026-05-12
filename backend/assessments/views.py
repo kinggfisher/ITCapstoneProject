@@ -112,7 +112,7 @@ class AssessmentViewSet(viewsets.ModelViewSet):
         writer = csv.writer(response)
         writer.writerow([
             'ID', 'Asset', 'Location', 'Equipment Type', 'Load Value',
-            'Capacity Metric', 'Compliant (PASS/FAIL)', 'Created By', 'Created At'
+            'Max Load', 'Capacity Metric', 'Compliant (PASS/FAIL)', 'Created By', 'Created At', 'Notes'
         ])
 
         for assessment in queryset:
@@ -120,12 +120,14 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                 assessment.id,
                 assessment.asset.name,
                 assessment.asset.location.name if assessment.asset.location else 'N/A',
-                assessment.get_equipment_type_display(),
+                assessment.equipment_type,
                 assessment.load_value,
+                assessment.capacity_limit,
                 assessment.capacity_metric,
                 'PASS' if assessment.is_compliant else 'FAIL',
                 assessment.created_by.username if assessment.created_by else 'N/A',
-                assessment.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                assessment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                assessment.notes or ''
             ])
 
         return response
@@ -247,7 +249,7 @@ class AssessmentHistoryViewSet(viewsets.ReadOnlyModelViewSet):
         writer = csv.writer(response)
         writer.writerow([
             'ID', 'Asset', 'Location', 'Equipment Type', 'Load Value',
-            'Capacity Metric', 'Compliant (PASS/FAIL)', 'Created At'
+            'Max Load', 'Capacity Metric', 'Compliant (PASS/FAIL)', 'Created At', 'Notes'
         ])
 
         for assessment in queryset:
@@ -255,11 +257,13 @@ class AssessmentHistoryViewSet(viewsets.ReadOnlyModelViewSet):
                 assessment.id,
                 assessment.asset.name,
                 assessment.asset.location.name if assessment.asset.location else 'N/A',
-                assessment.get_equipment_type_display(),
+                assessment.equipment_type,
                 assessment.load_value,
+                assessment.capacity_limit,
                 assessment.capacity_metric,
                 'PASS' if assessment.is_compliant else 'FAIL',
-                assessment.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                assessment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                assessment.notes or ''
             ])
 
         return response
