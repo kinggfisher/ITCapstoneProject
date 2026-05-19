@@ -11,6 +11,7 @@ from core.email_utils import (
     _build_html,
     send_compliance_failure_alert,
 )
+from assets.models import Asset, LoadCapacity
 
 
 # Permission Tests
@@ -258,12 +259,19 @@ class ExtractDesignCriteriaViewTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("error", response.data)
 
-    def test_image_file_returns_400(self):
+    @patch("core.views.extract_from_image", return_value={
+        "project": "Image Project",
+        "drawing_number": "IMG-001",
+        "capacities": [{"name": "max_point_load", "value": 50.0, "metric": "kN"}],
+        "raw_text": "[image]",
+    })
+    def test_image_file_uses_ai_extraction(self, mock_extract):
         from django.core.files.uploadedfile import SimpleUploadedFile
         file = SimpleUploadedFile("photo.png", b"\x89PNG\r\n", content_type="image/png")
         response = self.client.post("/api/extract/", {"file": file}, format="multipart")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("error", response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["project"], "Image Project")
+        self.assertEqual(response.data["capacities"][0]["name"], "max_point_load")
 
     @patch("core.views.extract_text_from_file", return_value="Project: BuildingA\nDrawing: DA-001\nMax Point Load: 50 kN")
     def test_valid_pdf_returns_extracted_data(self, mock_extract):
@@ -281,6 +289,33 @@ class ExtractDesignCriteriaViewTest(TestCase):
         response = self.client.post("/api/extract/", {"file": file}, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("error", response.data)
+
+    @patch("core.views.extract_text_from_file", side_effect=[
+        "Project: Site A\nDrawing: DA-001\nMax Point Load: 50 kN",
+        "Project: Site A\nDrawing: DA-001\nMax Point Load: 75 kN",
+    ])
+    def test_auto_save_updates_existing_capacity(self, mock_extract):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        first_file = SimpleUploadedFile("test.pdf", b"%PDF-1.4 first", content_type="application/pdf")
+        first = self.client.post(
+            "/api/extract/",
+            {"file": first_file, "auto_save": "true"},
+            format="multipart",
+        )
+        self.assertEqual(first.status_code, status.HTTP_200_OK)
+
+        second_file = SimpleUploadedFile("test.pdf", b"%PDF-1.4 second", content_type="application/pdf")
+        second = self.client.post(
+            "/api/extract/",
+            {"file": second_file, "auto_save": "true"},
+            format="multipart",
+        )
+        self.assertEqual(second.status_code, status.HTTP_200_OK)
+
+        asset = Asset.objects.get(name="DA-001")
+        capacity = LoadCapacity.objects.get(asset=asset, name="max_point_load")
+        self.assertEqual(capacity.max_load, 75.0)
 
 
 # JWT Auth Flow

@@ -180,6 +180,10 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Resend API (used when EMAIL_PROVIDER=resend)
 RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
 
+# AI extraction API keys (used by admin-side drawing ingestion)
+ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '')
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY', '')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 

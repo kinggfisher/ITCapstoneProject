@@ -1,15 +1,13 @@
 from django.http import JsonResponse
 from django.shortcuts import render
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from assets.models import Location, Asset, LoadCapacity
-from assets.extraction import extract_from_text
+from assets.extraction import extract_from_text, extract_from_image
 import pdfplumber
-from PIL import Image
-import io
 
 
 def extract_text_from_file(file):
@@ -20,12 +18,10 @@ def extract_text_from_file(file):
         with pdfplumber.open(file) as pdf:
             text = ''
             for page in pdf.pages:
-                text += page.extract_text() + '\n'
+                text += (page.extract_text() or '') + '\n'
             return text
     elif file.name.lower().endswith(('.jpg', '.jpeg', '.png')):
-        # For images, assume text is embedded or use OCR if available
-        # For now, raise error
-        raise ValueError("Image files are not supported yet. Please upload a PDF.")
+        raise ValueError("Image files should be processed by AI extraction, not text extraction.")
     else:
         raise ValueError("Unsupported file type. Only PDF files are supported.")
 
@@ -39,6 +35,7 @@ def demo(request):
 
 
 @api_view(['POST'])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def extract_design_criteria(request):
     """
@@ -58,7 +55,7 @@ def extract_design_criteria(request):
     """
     try:
         file = request.FILES.get('file')
-        auto_save = request.data.get('auto_save', False)
+        auto_save = str(request.data.get('auto_save', False)).lower() in ('1', 'true', 'yes')
 
         if not file:
             return Response(
@@ -66,17 +63,17 @@ def extract_design_criteria(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Extract text from file
-        text = extract_text_from_file(file)
-
-        if not text or not text.strip():
-            return Response(
-                {"error": "No text could be extracted from the file"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Extract data from text
-        extracted = extract_from_text(text)
+        if file.name.lower().endswith(('.jpg', '.jpeg', '.png')):
+            model = request.data.get('model', 'claude')
+            extracted = extract_from_image(file, model=model)
+        else:
+            text = extract_text_from_file(file)
+            if not text or not text.strip():
+                return Response(
+                    {"error": "No text could be extracted from the file"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            extracted = extract_from_text(text)
 
         # If auto_save requested, save to database
         if auto_save:
@@ -103,7 +100,7 @@ def extract_design_criteria(request):
             capacity_ids = []
             for capacity_data in extracted.get('capacities', []):
                 try:
-                    capacity, created = LoadCapacity.objects.get_or_create(
+                    capacity, created = LoadCapacity.objects.update_or_create(
                         asset=asset,
                         name=capacity_data['name'],
                         defaults={

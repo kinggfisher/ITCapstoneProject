@@ -6,7 +6,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 from .models import Location, Asset, LoadCapacity
-from .extraction import extract_from_text
+from .extraction import extract_from_text, _parse_json_response
 
 
 # Model Tests
@@ -164,6 +164,45 @@ class ExtractionTest(TestCase):
         result = extract_from_text(text)
         caps = {c["name"]: c for c in result["capacities"]}
         self.assertEqual(caps["max_point_load"]["value"], 12.5)
+
+    def test_extracts_udl_alias_and_normalises_tonnes(self):
+        text = """
+        Project Name: Loading Bay Upgrade
+        Drawing Number: LB-204
+        UDL: 4.5 kPa
+        Truck Axle Load Limit: 8 tonnes
+        """
+        result = extract_from_text(text)
+        caps = {c["name"]: c for c in result["capacities"]}
+        self.assertEqual(result["project"], "Loading Bay Upgrade")
+        self.assertEqual(result["drawing_number"], "LB-204")
+        self.assertEqual(caps["max_uniform_distributor_load"]["value"], 4.5)
+        self.assertEqual(caps["max_uniform_distributor_load"]["metric"], "kPa")
+        self.assertEqual(caps["max_axle_load"]["value"], 8.0)
+        self.assertEqual(caps["max_axle_load"]["metric"], "t")
+
+    def test_ai_json_parser_normalises_aliases_and_units(self):
+        text = """
+        ```json
+        {
+          "project": "Wharf Upgrade",
+          "drawing_number": "WH-101",
+          "capacities": [
+            {"name": "max_uniform_distributed_load", "value": "5.0", "metric": "KPA"},
+            {"name": "max_displacement", "value": "120", "metric": "tonnes"},
+            {"name": "irrelevant", "value": "99", "metric": "kg"}
+          ]
+        }
+        ```
+        """
+        result = _parse_json_response(text)
+        caps = {c["name"]: c for c in result["capacities"]}
+        self.assertEqual(result["project"], "Wharf Upgrade")
+        self.assertIn("max_uniform_distributor_load", caps)
+        self.assertEqual(caps["max_uniform_distributor_load"]["metric"], "kPa")
+        self.assertIn("max_displacement_size", caps)
+        self.assertEqual(caps["max_displacement_size"]["metric"], "t")
+        self.assertNotIn("irrelevant", caps)
 
 
 # API Tests — Assets
