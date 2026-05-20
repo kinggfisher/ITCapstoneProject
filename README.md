@@ -71,6 +71,10 @@ The `.env` file must be placed at the project root (`ITCapstoneProject/.env`). I
 > - **Google (Gemini 1.5 Flash):** Visit [aistudio.google.com](https://aistudio.google.com), click *Get API key*, and generate one in Google AI Studio.
 >
 > Both keys are personal — do not share or commit them. If you only need one model, you can leave the other key blank; the Admin Portal will still work with whichever key is provided.
+>
+> **Note on cost & testing:** Both APIs are paid services. If you need to test the AI extraction feature, contact our team for access to a shared key. A sample engineering drawing for testing is provided at [`docs/drawing_sample.png`](docs/drawing_sample.png).
+>
+> **Scope note:** The AI extraction feature is integrated from last semester's project and is **not part of this semester's MVP**. It is included to provide a complete end-to-end demo. All core MVP functionality (compliance checks, assessment history) works without any API keys configured.
 
 ### Setup
 ```bash
