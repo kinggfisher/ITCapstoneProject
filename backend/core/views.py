@@ -137,6 +137,55 @@ def extract_design_criteria(request):
 
 
 @api_view(['POST'])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def save_extracted_data(request):
+    """
+    Save previously extracted data to the database.
+
+    Request body (JSON):
+    {
+        "project": "BuildingA",
+        "drawing_number": "DA-001",
+        "capacities": [{"name": "max_point_load", "value": 50, "metric": "kN"}]
+    }
+    """
+    try:
+        project_name = request.data.get('project') or 'Unknown Project'
+        drawing_number = request.data.get('drawing_number') or 'Unknown Drawing'
+        capacities = request.data.get('capacities', [])
+
+        location, _ = Location.objects.get_or_create(name=project_name)
+        asset, _ = Asset.objects.get_or_create(location=location, name=drawing_number)
+
+        capacity_ids = []
+        for capacity_data in capacities:
+            try:
+                capacity, _ = LoadCapacity.objects.get_or_create(
+                    asset=asset,
+                    name=capacity_data['name'],
+                    defaults={
+                        'metric': capacity_data['metric'],
+                        'max_load': capacity_data['value'],
+                    }
+                )
+                capacity_ids.append(capacity.id)
+            except Exception:
+                pass
+
+        return Response({
+            "saved_ids": {
+                "location_id": location.id,
+                "asset_id": asset.id,
+                "capacity_ids": capacity_ids,
+            }
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout(request):
     """

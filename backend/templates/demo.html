@@ -210,11 +210,11 @@
                         <option value="gemini">Gemini 1.5 Flash (Google)</option>
                     </select>
                 </div>
-                <button onclick="runExtraction(false)" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-lg shadow transition-all">
+                <button onclick="runExtraction()" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-lg shadow transition-all">
                     Extract Design Limits
                 </button>
-                <button onclick="runExtraction(true)" class="bg-gjp hover-bg-gjp text-white font-bold py-3 px-8 rounded-lg shadow transition-all">
-                    Extract &amp; Save to Database
+                <button onclick="saveToDatabase()" class="bg-gjp hover-bg-gjp text-white font-bold py-3 px-8 rounded-lg shadow transition-all">
+                    Save to Database
                 </button>
             </div>
 
@@ -380,7 +380,9 @@
             if (file) document.getElementById('upload-label').textContent = '✓ ' + file.name;
         });
 
-        async function runExtraction(autoSave) {
+        let lastExtractionResult = null;
+
+        async function runExtraction() {
             const file = fileInput.files[0];
             if (!file) { alert('Please select a file first.'); return; }
 
@@ -388,11 +390,12 @@
             document.getElementById('extraction-results').classList.add('hidden');
             document.getElementById('saved-notice').classList.add('hidden');
             document.getElementById('extraction-loading').classList.remove('hidden');
+            lastExtractionResult = null;
 
             const model = document.getElementById('model-select').value;
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('auto_save', autoSave ? 'true' : 'false');
+            formData.append('auto_save', 'false');
             formData.append('model', model);
 
             try {
@@ -411,6 +414,8 @@
                     return;
                 }
 
+                lastExtractionResult = data;
+
                 document.getElementById('result-project').textContent = data.project || '—';
                 document.getElementById('result-drawing').textContent = data.drawing_number || '—';
 
@@ -428,14 +433,49 @@
                 }
 
                 document.getElementById('extraction-results').classList.remove('hidden');
-
-                if (autoSave && data.saved_ids) {
-                    const notice = document.getElementById('saved-notice');
-                    notice.textContent = `Saved to database — Asset ID: ${data.saved_ids.asset_id}, Capacities: ${data.saved_ids.capacity_ids.join(', ')}`;
-                    notice.classList.remove('hidden');
-                }
             } catch (e) {
                 document.getElementById('extraction-loading').classList.add('hidden');
+                const errEl = document.getElementById('extraction-error');
+                errEl.textContent = 'Network error: ' + e.message;
+                errEl.classList.remove('hidden');
+            }
+        }
+
+        async function saveToDatabase() {
+            if (!lastExtractionResult) {
+                alert('Please run extraction first.');
+                return;
+            }
+
+            document.getElementById('extraction-error').classList.add('hidden');
+            document.getElementById('saved-notice').classList.add('hidden');
+
+            try {
+                const res = await fetch('/api/save/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({
+                        project: lastExtractionResult.project,
+                        drawing_number: lastExtractionResult.drawing_number,
+                        capacities: lastExtractionResult.capacities,
+                    }),
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    const errEl = document.getElementById('extraction-error');
+                    errEl.textContent = data.error || 'Save failed.';
+                    errEl.classList.remove('hidden');
+                    return;
+                }
+
+                const notice = document.getElementById('saved-notice');
+                notice.textContent = `Saved to database — Asset ID: ${data.saved_ids.asset_id}, Capacities: ${data.saved_ids.capacity_ids.join(', ')}`;
+                notice.classList.remove('hidden');
+            } catch (e) {
                 const errEl = document.getElementById('extraction-error');
                 errEl.textContent = 'Network error: ' + e.message;
                 errEl.classList.remove('hidden');

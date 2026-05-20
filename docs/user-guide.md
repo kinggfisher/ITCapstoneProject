@@ -18,7 +18,24 @@ python manage.py createsuperuser
 
 You will be prompted to enter a username, email address, and password. **Use the admin's email address as the username** — this keeps login credentials consistent across the system.
 
-### 2. Access the Django Admin Panel
+### 2. Load Sample Data (First-Time Setup)
+
+After running migrations and creating a superuser, you can populate the database with sample locations, assets, load capacities, and equipment mappings using the built-in seed command:
+
+```bash
+cd backend
+source .venv/bin/activate
+python manage.py seed_sample_data
+```
+
+This will create:
+- **Locations**: Port of Bunbury, University of Western Australia
+- **Assets**: Berth 5, Berth 8 (Port of Bunbury); Engineering Courtyard, Main Campus Loading Bay (UWA)
+- **Equipment mappings**: Crane with outriggers, Mobile crane, Heavy vehicle, Elevated Work Platform, Storage Load, Vessel
+
+> The command is safe to skip if you are setting up a production environment and plan to enter real data manually through the Admin Panel. It is also idempotent — running it multiple times will not create duplicates.
+
+### 3. Access the Django Admin Panel
 
 Once the server is running, open a browser and go to:
 
@@ -28,7 +45,7 @@ http://127.0.0.1:8000/admin/
 
 Log in with the superuser credentials you just created.
 
-### 3. Add New Users
+### 4. Add New Users
 
 All users (engineers, contractors, asset managers) are created in Django Admin.
 
@@ -40,7 +57,7 @@ All users (engineers, contractors, asset managers) are created in Django Admin.
 
 > Users cannot change their own passwords. The admin is responsible for setting and distributing credentials directly. The system uses email addresses as usernames throughout — always set both fields to the same email to avoid login issues.
 
-### 4. Manage Assets and Load Limits (CRUD)
+### 5. Manage Assets and Load Limits (CRUD)
 
 All structural data is managed through Django Admin:
 
@@ -52,7 +69,7 @@ All structural data is managed through Django Admin:
 
 Navigate to the relevant section in the left sidebar, then use the standard Add / Change / Delete controls.
 
-### 5. Upload Engineering Drawings (Admin Portal)
+### 6. Upload Engineering Drawings (Admin Portal)
 
 The Admin Portal allows you to upload a PDF or image of an engineering drawing and use AI to automatically extract structural load limits, then save them to the database.
 
@@ -80,7 +97,7 @@ Either model works; use whichever API key you have available.
 
 - Click **Extract Design Limits** to preview the extracted values without saving
 - Review the results table (capacity type, value, unit)
-- If the data looks correct, click **Extract & Save to Database** to persist it
+- If the data looks correct, click **Save to Database** to persist it
 
 > Always preview before saving. If the extracted values look wrong, try the other AI model or check that the drawing is legible.
 

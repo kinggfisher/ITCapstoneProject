@@ -12,7 +12,7 @@ def _build_plain(user, assessment):
 
 Asset:          {assessment.asset.name}
 Location:       {assessment.asset.location.name}
-Equipment Type: {assessment.get_equipment_type_display()}
+Equipment Type: {assessment.equipment_type}
 Equipment Model:{assessment.equipment_model or '—'}
 Load Applied:   {assessment.load_value} {assessment.capacity_metric}
 Capacity Limit: {assessment.capacity_limit} {assessment.capacity_metric}
@@ -49,7 +49,7 @@ def _build_html(user, assessment):
                 </tr>
                 <tr style="background: #f3f4f6;">
                     <td style="padding: 10px 14px; font-weight: bold; color: #6b7280;">Equipment Type</td>
-                    <td style="padding: 10px 14px; color: #111827;">{assessment.get_equipment_type_display()}</td>
+                    <td style="padding: 10px 14px; color: #111827;">{assessment.equipment_type}</td>
                 </tr>
                 <tr>
                     <td style="padding: 10px 14px; font-weight: bold; color: #6b7280;">Equipment Model</td>

@@ -22,6 +22,7 @@ urlpatterns = [
     path('demo/', views.demo, name='demo'),
     path('admin/', admin.site.urls),
     path('api/extract/', views.extract_design_criteria, name='extract'),
+    path('api/save/', views.save_extracted_data, name='save'),
     path('api/logout/', views.logout, name='logout'),
     path('api/', include(router.urls)),
     path("api/token/", TokenObtainPairView.as_view(serializer_class=SuperuserTokenSerializer), name="token_obtain_pair"),
