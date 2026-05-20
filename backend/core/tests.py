@@ -258,7 +258,8 @@ class ExtractDesignCriteriaViewTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("error", response.data)
 
-    def test_image_file_returns_400(self):
+    @patch("core.views.extract_from_image", side_effect=ValueError("Image extraction requires a valid API key"))
+    def test_image_file_returns_400(self, mock_extract):
         from django.core.files.uploadedfile import SimpleUploadedFile
         file = SimpleUploadedFile("photo.png", b"\x89PNG\r\n", content_type="image/png")
         response = self.client.post("/api/extract/", {"file": file}, format="multipart")

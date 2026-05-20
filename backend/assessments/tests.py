@@ -9,7 +9,7 @@ from unittest.mock import patch, MagicMock
 from assets.models import Location, Asset, LoadCapacity
 from assessments.models import Assessment
 from .serializers import AssessmentSerializer
-from .mappings import EQUIPMENT_CAPACITY_MAP
+from .mappings import get_equipment_capacity_map
 
 
 # Shared helpers
@@ -51,7 +51,7 @@ class AssessmentModelTest(TestCase):
         return Assessment.objects.create(
             location=self.location,
             asset=self.asset,
-            equipment_type=Assessment.EquipmentType.CRANE_WITH_OUTRIGGERS,
+            equipment_type="crane_with_outriggers",
             load_value=load_value,
             capacity_name=LoadCapacity.CapacityName.MAX_POINT_LOAD,
             capacity_metric=LoadCapacity.Metric.KN,
@@ -70,13 +70,18 @@ class AssessmentModelTest(TestCase):
         self.assertIn("FAIL", str(a))
 
     def test_equipment_type_choices(self):
-        choices = [c[0] for c in Assessment.EquipmentType.choices]
-        self.assertIn("crane_with_outriggers", choices)
-        self.assertIn("mobile_crane", choices)
-        self.assertIn("heavy_vehicle", choices)
-        self.assertIn("elevated_work_platform", choices)
-        self.assertIn("storage_load", choices)
-        self.assertIn("vessel", choices)
+        # Equipment types are now stored in EquipmentCapacityMapping (DB-backed).
+        # get_equipment_capacity_map() is the authoritative source.
+        known_types = get_equipment_capacity_map().keys()
+        for expected in [
+            "crane_with_outriggers",
+            "mobile_crane",
+            "heavy_vehicle",
+            "elevated_work_platform",
+            "storage_load",
+            "vessel",
+        ]:
+            self.assertIn(expected, known_types)
 
     def test_optional_fields(self):
         a = self._make_assessment(30.0, True)
@@ -96,34 +101,34 @@ class MappingsTest(TestCase):
             "storage_load",
             "vessel",
         }
-        self.assertEqual(set(EQUIPMENT_CAPACITY_MAP.keys()), expected)
+        self.assertEqual(set(get_equipment_capacity_map().keys()), expected)
 
     def test_crane_with_outriggers_maps_to_max_point_load(self):
-        capacity_name, _ = EQUIPMENT_CAPACITY_MAP["crane_with_outriggers"]
+        capacity_name, _ = get_equipment_capacity_map()["crane_with_outriggers"]
         self.assertEqual(capacity_name, LoadCapacity.CapacityName.MAX_POINT_LOAD)
 
     def test_mobile_crane_maps_to_max_axle_load(self):
-        capacity_name, _ = EQUIPMENT_CAPACITY_MAP["mobile_crane"]
+        capacity_name, _ = get_equipment_capacity_map()["mobile_crane"]
         self.assertEqual(capacity_name, LoadCapacity.CapacityName.MAX_AXLE_LOAD)
 
     def test_heavy_vehicle_maps_to_max_axle_load(self):
-        capacity_name, _ = EQUIPMENT_CAPACITY_MAP["heavy_vehicle"]
+        capacity_name, _ = get_equipment_capacity_map()["heavy_vehicle"]
         self.assertEqual(capacity_name, LoadCapacity.CapacityName.MAX_AXLE_LOAD)
 
     def test_ewp_maps_to_max_point_load(self):
-        capacity_name, _ = EQUIPMENT_CAPACITY_MAP["elevated_work_platform"]
+        capacity_name, _ = get_equipment_capacity_map()["elevated_work_platform"]
         self.assertEqual(capacity_name, LoadCapacity.CapacityName.MAX_POINT_LOAD)
 
     def test_storage_load_maps_to_udl(self):
-        capacity_name, _ = EQUIPMENT_CAPACITY_MAP["storage_load"]
+        capacity_name, _ = get_equipment_capacity_map()["storage_load"]
         self.assertEqual(capacity_name, LoadCapacity.CapacityName.MAX_UNIFORM_DISTRIBUTOR_LOAD)
 
     def test_vessel_maps_to_displacement(self):
-        capacity_name, _ = EQUIPMENT_CAPACITY_MAP["vessel"]
+        capacity_name, _ = get_equipment_capacity_map()["vessel"]
         self.assertEqual(capacity_name, LoadCapacity.CapacityName.MAX_DISPLACEMENT_SIZE)
 
     def test_each_mapping_has_two_values(self):
-        for key, value in EQUIPMENT_CAPACITY_MAP.items():
+        for key, value in get_equipment_capacity_map().items():
             self.assertEqual(len(value), 2, f"Mapping for '{key}' should have exactly 2 values")
 
 
@@ -337,7 +342,7 @@ class EquipmentOptionsAPITest(TestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.get("/api/equipment-options/")
         values = [item["value"] for item in response.data]
-        for key in EQUIPMENT_CAPACITY_MAP:
+        for key in get_equipment_capacity_map():
             self.assertIn(key, values)
 
     def test_response_shape(self):
